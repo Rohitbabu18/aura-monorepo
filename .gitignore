@@ -1,11 +1,28 @@
-./node_modules
-.env
-dist
-coverage
-.DS_Store
-.vscode
-.idea
-npm-debug.log
-yarn-error.log
+# Node modules directory
+node_modules/
+
+# Logs
+logs
 *.log
-*.tsbuildinfo
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# .env file (Sensitive data)
+.env
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Build output
+dist/
+build/
+ 
