@@ -1,0 +1,11 @@
+model Location {
+  id          String   @id @default(uuid())
+  hospitalId  String   @unique
+  userId      String   @unique
+  latitude    Float
+  longitude   Float
+
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+  user    User @relation(fields: [userId], references: [id])
+
+}

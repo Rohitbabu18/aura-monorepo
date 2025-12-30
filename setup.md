@@ -2,8 +2,7 @@
 1. Install the requirements ( Do ChatGPT how can I install below things in my window/mac ) 
     - node 
     - npm
-    - mongodb
-    - mongodb-community
+    - postgresql 
 
     Note: After npm install please do run below command
       > npm install
@@ -17,6 +16,8 @@ MONGO_URI=mongodb://127.0.0.1:27017/mobile_app
 JWT_SECRET=supersecretkey
 ```
 
-4. To run the project
+4. Check if Postgres is running, run below command
+  pg_isready
+5. To run the project
 
   npm run dev 

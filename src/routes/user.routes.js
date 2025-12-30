@@ -1,9 +1,16 @@
-const router = require('express').Router();
-const { register ,deleteUser,getAllUsers,getUserById} = require('../controllers/user.controller');
+import { Router } from 'express';
+import {
+  register,
+  deleteUser,
+  getAllUsers,
+  getUserById
+} from '../controllers/user.controller.ts';
+
+const router = Router();
 
 router.get('/getAllUsers', getAllUsers);
 router.post('/getUserById', getUserById);
 router.post('/register', register);
 router.delete('/deleteUser', deleteUser);
 
-module.exports = router;
+export default router;
