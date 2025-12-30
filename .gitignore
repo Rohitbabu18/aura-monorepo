@@ -15,6 +15,7 @@ Thumbs.db
 
 # .env file (Sensitive data)
 .env
+*.env
 
 # Optional npm cache directory
 .npm
