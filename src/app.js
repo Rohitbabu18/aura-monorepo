@@ -1,5 +1,6 @@
 import express from 'express';
 import userRoutes from './routes/user.routes.js';
+import hospitalRoutes from './routes/hospital.routes.ts';
 
 const app = express();
 
@@ -9,6 +10,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'OK' });
 });
 
+app.use('/api/hospital', hospitalRoutes);
 app.use('/api/users', userRoutes);
 
 
