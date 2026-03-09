@@ -1,6 +1,8 @@
 import { prisma } from '../lib/prisma.ts';
 
-export const registerHospital = async (req: any, res: any) => {
+import type { Request, Response } from 'express'
+
+export const registerHospital = async (req: Request, res: Response) => {
   try {
     const { email, role, name, phone, alternatePhone } = req.body;
 
@@ -39,7 +41,7 @@ export const registerHospital = async (req: any, res: any) => {
   }
 };
 
-export const updateHospital = async (req: any, res: any) => {
+export const updateHospital = async (req: Request, res: Response) => {
   try {
     const { hospital_id, ...updateData } = req.body;
 
@@ -72,9 +74,9 @@ export const updateHospital = async (req: any, res: any) => {
   }
 };
 
-export const deleteHospital = async (req: any, res: any) => {
+export const deleteHospital = async (req: Request, res: Response) => {
   try {
-    const { hospital_id } = req.body;
+    const  hospital_id  = req.params.id;
 
     const exists = await prisma.hospital.findUnique({
       where: { id: hospital_id }
@@ -104,7 +106,7 @@ export const deleteHospital = async (req: any, res: any) => {
   }
 };
 
-export const getAllHospitals = async (req: any, res: any) => {
+export const getAllHospitals = async (req: Request, res: Response) => {
   const hospitals = await prisma.hospital.findMany();
 
   return res.status(200).json({
@@ -114,9 +116,9 @@ export const getAllHospitals = async (req: any, res: any) => {
   });
 };
 
-export const getHospitalById = async (req: any, res: any) => {
+export const getHospitalById = async (req: Request, res: Response) => {
   try {
-    const { hospital_id } = req.body;
+    const  hospital_id  = req.params.id;
 
     if (!hospital_id) {
       return res.status(404).json({

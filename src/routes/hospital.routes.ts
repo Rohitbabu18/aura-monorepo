@@ -9,10 +9,10 @@ import {
 
 const router = Router();
 
-router.get('/getAllHospital', getAllHospitals);
-router.post('/hospitalById', getHospitalById);
+router.get('/all', getAllHospitals);
+router.get('/:id', getHospitalById);
 router.post('/create', registerHospital);
 router.put('/update', updateHospital);
-router.delete('/delete', deleteHospital);
+router.delete('/:id', deleteHospital);
 
 export default router;

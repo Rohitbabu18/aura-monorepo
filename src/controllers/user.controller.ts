@@ -1,18 +1,25 @@
 
 
 import bcrypt from 'bcryptjs';
-
+import type { Request, Response } from "express";
 import { prisma } from '../lib/prisma.ts';
 /**
  * REGISTER / SIGN IN
  */
-export const register = async (req: any, res: any) => {
+export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { phone, password } = req.body;
+
+    if (!phone || !password) {
+      return res.status(400).json({
+        message: 'phone and password are required.',
+        code: 400
+      });
+    }
 
     const exists = await prisma.user.findUnique({
-      where:{email}
-    })
+      where:{ phone }
+    });
 
     // User exists → try login
     if (exists) {
@@ -27,7 +34,7 @@ export const register = async (req: any, res: any) => {
       }
 
       return res.status(403).json({
-        message: 'Email already in use, Please provide valid password',
+        message: 'Please provide valid password',
         code: 403
       });
     }
@@ -37,10 +44,10 @@ export const register = async (req: any, res: any) => {
 
     const user = await prisma.user.create({
       data:{
-        email,
+        phone,
         password: hashedPassword
       }
-    })
+    });
 
     return res.status(201).json({
       message: 'User Sign Up successfully.',
@@ -58,9 +65,9 @@ export const register = async (req: any, res: any) => {
 /**
  * DELETE USER
  */
-export const deleteUser = async (req: any, res: any) => {
+export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const { user_id } = req.body;
+    const  user_id  = req.params.id;
 
     const exists = await prisma.user.findUnique({
       where: { id: user_id }
@@ -93,7 +100,7 @@ export const deleteUser = async (req: any, res: any) => {
 /**
  * GET ALL USERS
  */
-export const getAllUsers = async (req: any, res: any) => {
+export const getAllUsers = async (req: Request, res: Response) => {
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -113,9 +120,9 @@ export const getAllUsers = async (req: any, res: any) => {
 /**
  * GET USER BY ID
  */
-export const getUserById = async (req: any, res: any) => {
+export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { user_id } = req.body;
+    const  user_id  = req.params.id;
 
     if (!user_id) {
       return res.status(404).json({
