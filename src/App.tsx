@@ -1,69 +1,192 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { 
-  API_ENDPOINT, USER_TYPES, SPECIALIZATIONS, STATES, 
-  HOSPITAL_TYPES, CLINIC_TYPES, HOSPITAL_SERVICES, CLINIC_SERVICES,
-  REGISTRATION_AUTHORITIES, OWNERSHIP_TYPES
+import {
+  USER_TYPES,
+  SPECIALIZATIONS,
+  STATES,
+  HOSPITAL_TYPES,
+  CLINIC_TYPES,
+  HOSPITAL_SERVICES,
+  CLINIC_SERVICES,
+  REGISTRATION_AUTHORITIES,
+  OWNERSHIP_TYPES,
+  UserType,
 } from './constants/appConstants';
+import { API_URLS } from './api/urls';
+import useApi from './api/hooks/useApi';
 import './App.css';
 import Images from './halper/Images';
+
+type RegistrationFormData = {
+  userType: UserType | '';
+  name: string;
+  contactNumber: string;
+  email: string;
+  alternateContact: string;
+  address: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  specialization: string;
+  experience: string;
+  registrationNumber: string;
+  registrationAuthority: string;
+  facilityType: string;
+  establishedYear: string;
+  ownershipType: string;
+  registrationNo: string;
+  licenseNumber: string;
+  totalBeds: string;
+  totalStaff: string;
+  services: string[];
+  operatingHours: string;
+  emergencyAvailable: boolean;
+  ambulanceAvailable: boolean;
+  websiteUrl: string;
+};
+
+type FormErrors = Partial<Record<keyof RegistrationFormData | 'submit', string>>;
+
+type RegisterPayload = Omit<
+  RegistrationFormData,
+  | 'contactNumber'
+  | 'alternateContact'
+  | 'address'
+  | 'city'
+  | 'state'
+  | 'pinCode'
+  | 'specialization'
+  | 'experience'
+  | 'registrationNumber'
+  | 'registrationAuthority'
+  | 'facilityType'
+  | 'establishedYear'
+  | 'ownershipType'
+  | 'registrationNo'
+  | 'licenseNumber'
+  | 'totalBeds'
+  | 'totalStaff'
+  | 'services'
+  | 'operatingHours'
+  | 'emergencyAvailable'
+  | 'ambulanceAvailable'
+  | 'websiteUrl'
+> & {
+  phone: string;
+  alternatePhone: string;
+};
+
+type RegisterResponse = {
+ data:{
+   id?: number | string;
+    [key: string]: unknown;
+ } 
+};
+
+type ToastState = {
+  message: string;
+  type: 'success' | 'error';
+};
+
+const REGISTRATION_ID_KEY = 'aura_registration_id';
+
+const getStoredRegistrationId = () =>
+  localStorage.getItem(REGISTRATION_ID_KEY);
+
+const storeRegistrationId = (id: string | number) => {
+  localStorage.setItem(REGISTRATION_ID_KEY, String(id));
+};
+
+const clearStoredRegistrationId = () => {
+  localStorage.removeItem(REGISTRATION_ID_KEY);
+};
+
+const initialFormData: RegistrationFormData = {
+  userType: '',
+  name: '',
+  contactNumber: '',
+  email: '',
+  alternateContact: '',
+  address: '',
+  city: '',
+  state: '',
+  pinCode: '',
+  specialization: '',
+  experience: '',
+  registrationNumber: '',
+  registrationAuthority: '',
+  facilityType: '',
+  establishedYear: '',
+  ownershipType: '',
+  registrationNo: '',
+  licenseNumber: '',
+  totalBeds: '',
+  totalStaff: '',
+  services: [],
+  operatingHours: '',
+  emergencyAvailable: false,
+  ambulanceAvailable: false,
+  websiteUrl: '',
+};
 
 function RegistrationApp() {
   const { isDark, toggleTheme } = useTheme();
   
   const [currentStep, setCurrentStep] = useState(1);
-  const [registrationId, setRegistrationId] = useState(null);
+  const [registrationId, setRegistrationId] = useState<number | string | null>(
+    null
+  );
   
-  const [formData, setFormData] = useState({
-    // Common fields
-    userType: '',
-    name: '',
-    contactNumber: '',
-    email: '',
-    alternateContact: '',
-    address: '',
-    city: '',
-    state: '',
-    pinCode: '',
-    
-    // Doctor fields
-    specialization: '',
-    experience: '',
-    registrationNumber: '',
-    registrationAuthority: '',
-    
-    // Hospital/Clinic fields
-    facilityType: '',
-    establishedYear: '',
-    ownershipType: '',
-    registrationNo: '',
-    licenseNumber: '',
-    totalBeds: '',
-    totalStaff: '',
-    services: [],
-    operatingHours: '',
-    emergencyAvailable: false,
-    ambulanceAvailable: false,
-    websiteUrl: '',
-  });
+  const [formData, setFormData] = useState<RegistrationFormData>(initialFormData);
 
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const { request, loading: isSubmitting } = useApi();
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  useEffect(() => {
+    const storedId = getStoredRegistrationId();
+    if (storedId && !registrationId) {
+      setRegistrationId(storedId);
+    }
+  }, [registrationId]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        window.clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const showToast = (message: string, type: ToastState['type']) => {
+    setToast({ message, type });
+    if (toastTimeoutRef.current) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const target = e.target as HTMLInputElement;
+    const { name, value, type, checked } = target;
+    const field = name as keyof RegistrationFormData;
     setFormData(prev => ({ 
       ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+      [field]: type === 'checkbox' ? checked : value 
     }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  const handleServiceToggle = (service) => {
+  const handleServiceToggle = (service: string) => {
     setFormData(prev => ({
       ...prev,
       services: prev.services.includes(service)
@@ -79,8 +202,8 @@ function RegistrationApp() {
     return 2; // For doctor, nurse, staff
   };
 
-  const validateStep = (step) => {
-    const newErrors = {};
+  const validateStep = (step: number) => {
+    const newErrors: FormErrors = {};
 
     if (step === 1) {
       // Basic Information - Mandatory
@@ -139,38 +262,123 @@ function RegistrationApp() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const saveStepData = async () => {
-    setIsSubmitting(true);
+  const buildRegisterPayload = (): RegisterPayload => {
+    return {
+      userType: formData.userType,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.contactNumber,
+      alternatePhone: formData.alternateContact,
+    };
+  };
+
+  const toOptionalNumber = (value: string) => {
+    if (!value.trim()) return undefined;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+
+  const toOptionalString = (value: string) => {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : undefined;
+  };
+
+  const buildHospitalUpdatePayload = () => {
+    const role =
+      formData.userType === 'hospital'
+        ? 'HOSPITAL'
+        : formData.userType === 'clinic'
+        ? 'CLINIC'
+        : undefined;
+
+    return {
+      name: toOptionalString(formData.name),
+      email: toOptionalString(formData.email),
+      phone: toOptionalString(formData.contactNumber),
+      alternatePhone: toOptionalString(formData.alternateContact),
+      role,
+      facilityType: toOptionalString(formData.facilityType),
+      ownershipType: toOptionalString(formData.ownershipType),
+      numberOfBeds: toOptionalNumber(formData.totalBeds),
+      emergencyAvailable: formData.emergencyAvailable,
+      servicesOffered: formData.services.length ? formData.services : undefined,
+      registrationNumber: toOptionalString(formData.registrationNo),
+      yearEstablished: toOptionalNumber(formData.establishedYear),
+      licenseNumber: toOptionalString(formData.licenseNumber),
+      websiteUrl: toOptionalString(formData.websiteUrl),
+    };
+  };
+
+  const buildUserUpdatePayload = () => {
+    const role = formData.userType
+      ? formData.userType.toUpperCase()
+      : undefined;
+
+    return {
+      name: toOptionalString(formData.name),
+      phone: toOptionalString(formData.contactNumber),
+      email: toOptionalString(formData.email),
+      alternatePhone: toOptionalString(formData.alternateContact),
+      role,
+      specialization: toOptionalString(formData.specialization),
+      experience: toOptionalNumber(formData.experience),
+      registrationNumber: toOptionalString(formData.registrationNumber),
+      registrationAuthority: toOptionalString(formData.registrationAuthority),
+      address: toOptionalString(formData.address),
+      city: toOptionalString(formData.city),
+      state: toOptionalString(formData.state),
+      pinCode: toOptionalString(formData.pinCode),
+      websiteUrl: toOptionalString(formData.websiteUrl),
+    };
+  };
+
+  const saveStepData = async (): Promise<boolean> => {
     try {
-      const method = registrationId ? 'PUT' : 'POST';
-      const url = registrationId 
-        ? `${API_ENDPOINT}/${registrationId}` 
-        : API_ENDPOINT;
+      const isHospitalOrClinic =
+        formData.userType === 'hospital' || formData.userType === 'clinic';
+      const isFirstStep = currentStep === 1;
+      const storedId = registrationId ?? getStoredRegistrationId();
 
-      const response = await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          step: currentStep,
-          lastUpdated: new Date().toISOString()
-        }),
-      });
+      if (isFirstStep) {
+        const { data } = await request<RegisterResponse>(API_URLS.registerUser, {
+          method: 'POST',
+          body: buildRegisterPayload(),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        // In real scenario, backend will return an ID
-        if (!registrationId) {
-          setRegistrationId(data.id || Date.now());
-        }
+        const id = data?.data.id ?? Date.now();
+        setRegistrationId(id);
+        storeRegistrationId(id);
         return true;
       }
+
+      if (!storedId) {
+        const message = 'Registration ID missing. Please start again.';
+        showToast(message, 'error');
+        setErrors({ submit: message });
+        return false;
+      }
+
+      const updateUrl = isHospitalOrClinic
+        ? API_URLS.updateHospital(storedId)
+        : API_URLS.updateUser(storedId);
+
+      const payload = isHospitalOrClinic
+        ? buildHospitalUpdatePayload()
+        : buildUserUpdatePayload();
+
+      await request(updateUrl, {
+        method: 'PATCH',
+        body: payload,
+      });
+
       return true;
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to save data';
       console.error('Save error:', error);
-      return true;
-    } finally {
-      setIsSubmitting(false);
+      showToast(message, 'error');
+      setErrors({ submit: message });
+      return false;
     }
   };
 
@@ -181,17 +389,13 @@ function RegistrationApp() {
     if (saved) {
       if (currentStep < getTotalSteps()) {
         setCurrentStep(currentStep + 1);
+        showToast('Step saved successfully.', 'success');
       } else {
         setSubmitSuccess(true);
+        showToast('Registration completed successfully.', 'success');
+        clearStoredRegistrationId();
         setTimeout(() => {
-          setFormData({
-            userType: '', name: '', contactNumber: '', email: '', alternateContact: '',
-            address: '', city: '', state: '', pinCode: '', specialization: '', experience: '',
-            registrationNumber: '', registrationAuthority: '', facilityType: '', establishedYear: '',
-            ownershipType: '', registrationNo: '', licenseNumber: '', totalBeds: '', totalStaff: '',
-            services: [], operatingHours: '', emergencyAvailable: false, ambulanceAvailable: false,
-            websiteUrl: ''
-          });
+          setFormData(initialFormData);
           setCurrentStep(1);
           setRegistrationId(null);
           setSubmitSuccess(false);
@@ -288,7 +492,7 @@ function RegistrationApp() {
               value={formData.contactNumber}
               onChange={handleChange}
               placeholder="10-digit mobile"
-              maxLength="10"
+              maxLength={10}
               className={errors.contactNumber ? 'error' : ''}
             />
           </div>
@@ -321,7 +525,7 @@ function RegistrationApp() {
             value={formData.alternateContact}
             onChange={handleChange}
             placeholder="10-digit mobile (optional)"
-            maxLength="10"
+            maxLength={10}
           />
         </div>
       </div>
@@ -340,7 +544,7 @@ function RegistrationApp() {
           value={formData.address}
           onChange={handleChange}
           placeholder="Enter complete address"
-          rows="3"
+          rows={3}
           className={errors.address ? 'error' : ''}
         />
         {errors.address && <span className="error">{errors.address}</span>}
@@ -384,7 +588,7 @@ function RegistrationApp() {
             value={formData.pinCode}
             onChange={handleChange}
             placeholder="6-digit PIN"
-            maxLength="6"
+            maxLength={6}
             className={errors.pinCode ? 'error' : ''}
           />
           {errors.pinCode && <span className="error">{errors.pinCode}</span>}
@@ -645,6 +849,11 @@ function RegistrationApp() {
   return (
     <div className="app">
       <div className="background-pattern"></div>
+      {toast && (
+        <div className={`toast toast-${toast.type}`} role="status">
+          {toast.message}
+        </div>
+      )}
       
       <motion.div 
         className="container"

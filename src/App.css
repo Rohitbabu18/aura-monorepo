@@ -586,6 +586,36 @@ select {
   border: 2px solid var(--error);
 }
 
+/* Toast */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1200;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 2px solid var(--border);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  animation: toast-in 0.25s ease;
+  max-width: 320px;
+}
+
+.toast-success {
+  border-color: var(--primary);
+}
+
+.toast-error {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+@keyframes toast-in {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* Success Modal */
 .success-overlay {
   position: fixed;

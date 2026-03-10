@@ -36,8 +36,6 @@ export const fonts = {
   }
 };
 
-// API Configuration
-export const API_ENDPOINT = 'https://jsonplaceholder.typicode.com/posts';
 
 // User Types
 export const USER_TYPES = [
@@ -46,14 +44,14 @@ export const USER_TYPES = [
   { value: 'doctor', label: 'Doctor', icon: '👨‍⚕️' },
   { value: 'nurse', label: 'Nurse', icon: '👩‍⚕️' },
   { value: 'staff', label: 'Other Staff', icon: '👤' }
-];
+ ] as const;
 
 // Specializations
 export const SPECIALIZATIONS = [
   'Cardiology', 'Dermatology', 'Endocrinology', 'Gastroenterology',
   'Neurology', 'Oncology', 'Orthopedics', 'Pediatrics',
   'Psychiatry', 'Radiology', 'Surgery', 'General Practice'
-];
+ ] as const;
 
 // Indian States
 export const STATES = [
@@ -62,7 +60,7 @@ export const STATES = [
   'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
   'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
   'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
-];
+ ] as const;
 
 // Hospital Types
 export const HOSPITAL_TYPES = [
@@ -74,7 +72,7 @@ export const HOSPITAL_TYPES = [
   'Government Hospital',
   'Private Hospital',
   'Charitable Hospital'
-];
+ ] as const;
 
 // Clinic Types
 export const CLINIC_TYPES = [
@@ -86,7 +84,7 @@ export const CLINIC_TYPES = [
   'Diagnostic Center',
   'Polyclinic',
   'Specialty Clinic'
-];
+ ] as const;
 
 // Services
 export const HOSPITAL_SERVICES = [
@@ -104,7 +102,7 @@ export const HOSPITAL_SERVICES = [
   'Radiology',
   'Pathology',
   'Dialysis'
-];
+ ] as const;
 
 export const CLINIC_SERVICES = [
   'Consultation',
@@ -116,7 +114,7 @@ export const CLINIC_SERVICES = [
   'Ultrasound',
   'ECG',
   'Vaccination'
-];
+ ] as const;
 
 // Registration Authorities
 export const REGISTRATION_AUTHORITIES = [
@@ -126,7 +124,7 @@ export const REGISTRATION_AUTHORITIES = [
   'Pharmacy Council of India',
   'Dental Council of India',
   'Other'
-];
+ ] as const;
 
 // Ownership Types
 export const OWNERSHIP_TYPES = [
@@ -137,4 +135,6 @@ export const OWNERSHIP_TYPES = [
   'Partnership',
   'Proprietorship',
   'Corporate'
-];
+ ] as const;
+
+export type UserType = typeof USER_TYPES[number]['value'];
