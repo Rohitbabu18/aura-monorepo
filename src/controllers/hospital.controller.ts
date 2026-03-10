@@ -43,20 +43,39 @@ export const registerHospital = async (req: Request, res: Response) => {
 
 export const updateHospital = async (req: Request, res: Response) => {
   try {
-    const { hospital_id, ...updateData } = req.body;
+    const {
+      hospital_id,
+      hospitalId,
+      id: bodyId,
+      ...updateData
+    } = req.body;
+    const paramId = req.params?.hospitalId;
+    const hospitalIdToUpdate = paramId || hospital_id || hospitalId || bodyId;
+
+    if (!hospitalIdToUpdate) {
+      return res.status(400).json({
+        message: 'Please provide hospital id.'
+      });
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        message: 'Please provide at least one field to update.'
+      });
+    }
 
     const exists = await prisma.hospital.findUnique({
-      where: { id: hospital_id }
+      where: { id: hospitalIdToUpdate }
     });
 
     if (!exists) {
-      return res.status(403).json({
+      return res.status(404).json({
         message: 'Invalid hospital id.'
       });
     }
 
     const hospitalUpdate = await prisma.hospital.update({
-      where: { id: hospital_id },
+      where: { id: hospitalIdToUpdate },
       data: updateData
     });
 
@@ -67,8 +86,8 @@ export const updateHospital = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    return res.status(403).json({
-      message: 'Invalid hospital id.',
+    return res.status(500).json({
+      message: 'Something went wrong.',
       error
     });
   }
@@ -76,7 +95,7 @@ export const updateHospital = async (req: Request, res: Response) => {
 
 export const deleteHospital = async (req: Request, res: Response) => {
   try {
-    const  hospital_id  = req.params.id;
+    const  hospital_id  = req?.params?.id as string;
 
     const exists = await prisma.hospital.findUnique({
       where: { id: hospital_id }
@@ -118,7 +137,7 @@ export const getAllHospitals = async (req: Request, res: Response) => {
 
 export const getHospitalById = async (req: Request, res: Response) => {
   try {
-    const  hospital_id  = req.params.id;
+    const  hospital_id  = req?.params?.id as string;
 
     if (!hospital_id) {
       return res.status(404).json({

@@ -13,6 +13,7 @@ router.get('/all', getAllHospitals);
 router.get('/:id', getHospitalById);
 router.post('/create', registerHospital);
 router.put('/update', updateHospital);
+router.patch('/update/:hospitalId', updateHospital);
 router.delete('/:id', deleteHospital);
 
 export default router;
