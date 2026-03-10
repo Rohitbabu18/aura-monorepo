@@ -301,10 +301,12 @@ function RegistrationApp() {
       ownershipType: toOptionalString(formData.ownershipType),
       numberOfBeds: toOptionalNumber(formData.totalBeds),
       emergencyAvailable: formData.emergencyAvailable,
+      ambulanceAvailable: formData.ambulanceAvailable,
       servicesOffered: formData.services.length ? formData.services : undefined,
       registrationNumber: toOptionalString(formData.registrationNo),
       yearEstablished: toOptionalNumber(formData.establishedYear),
       licenseNumber: toOptionalString(formData.licenseNumber),
+      operatingHours: toOptionalString(formData.operatingHours),
       websiteUrl: toOptionalString(formData.websiteUrl),
     };
   };
