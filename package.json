@@ -1,5 +1,5 @@
 {
-  "name": "mobile-backend",
+  "name": "backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,7 +8,8 @@
     "migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "prisma:generate": "prisma generate",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",

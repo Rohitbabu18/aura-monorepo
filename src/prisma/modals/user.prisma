@@ -3,6 +3,7 @@ model User {
   name      String?
   phone     String   @unique
   email     String?  @unique
+  role                 String?
   alternatePhone      String?
   specialization       String?
   experience           String?

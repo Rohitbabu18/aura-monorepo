@@ -207,11 +207,11 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
         email,
         alternatePhone,
         specialization,
-        experience,
+        experience: experience != null ? String(experience) : undefined,
         registrationNumber,
         registrationAuthority,
-        password: hashedPassword
-        ,
+        role: userType,
+        password: hashedPassword,
         address: address || city || state || pinCode ? {
           create: {
             complete: address,
@@ -242,7 +242,7 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
  */
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const  user_id  = req.params.id;
+    const  user_id  = req.params.id as string;
 
     const exists = await prisma.user.findUnique({
       where: { id: user_id }
@@ -297,7 +297,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
  */
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const  user_id  = req.params.id;
+    const  user_id  = req.params.id as string;
 
     if (!user_id) {
       return res.status(404).json({
@@ -339,7 +339,7 @@ export const getUserById = async (req: Request, res: Response) => {
  */
 export const updateUserById = async (req: Request, res: Response) => {
   try {
-    const user_id = req.params.id;
+    const user_id = req.params.id as string;
 
     if (!user_id) {
       return res.status(400).json({
@@ -347,8 +347,46 @@ export const updateUserById = async (req: Request, res: Response) => {
       });
     }
 
-    const updateData = req.body ?? {};
-    if (Object.keys(updateData).length === 0) {
+    const body = req.body ?? {};
+
+    const address = body?.address;
+    const city = body?.city;
+    const state = body?.state;
+    const pinCode = body?.pinCode ?? body?.pincode;
+
+    const updateData: Record<string, unknown> = {
+      name: body?.name,
+      phone: body?.phone,
+      email: body?.email,
+      role: body?.role,
+      alternatePhone: body?.alternatePhone,
+      specialization: body?.specialization,
+      experience: body?.experience != null ? String(body.experience) : undefined,
+      registrationNumber: body?.registrationNumber,
+      registrationAuthority: body?.registrationAuthority
+    };
+
+    if (address || city || state || pinCode) {
+      updateData.address = {
+        upsert: {
+          create: {
+            complete: address,
+            city,
+            state,
+            pincode: pinCode ? Number(pinCode) : undefined
+          },
+          update: {
+            complete: address,
+            city,
+            state,
+            pincode: pinCode ? Number(pinCode) : undefined
+          }
+        }
+      };
+    }
+
+    const hasUpdates = Object.values(updateData).some((v) => v !== undefined);
+    if (!hasUpdates) {
       return res.status(400).json({
         message: 'Please provide at least one field to update.'
       });
