@@ -8,6 +8,7 @@
   "scripts": {
     "dev:frontend": "yarn workspace frontend start",
     "dev:backend": "yarn workspace backend dev",
-    "build": "yarn workspaces run build"
+    "prisma:generate": "yarn workspace backend prisma generate",
+    "build": "yarn prisma:generate && yarn workspaces run build"
   }
 }

@@ -9,7 +9,7 @@
     "db:push": "prisma db push",
     "prisma:generate": "prisma generate",
     "start": "node src/server.js",
-    "build": "tsc"
+    "build": "prisma generate && tsc"
   },
   "keywords": [],
   "author": "",
