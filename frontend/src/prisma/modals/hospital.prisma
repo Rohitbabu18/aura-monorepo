@@ -1,0 +1,46 @@
+
+model Hospital {
+  id                     String   @id @default(uuid())
+  name                   String
+  email                  String   @unique
+  phone                  String?
+  alternatePhone         String?
+
+  role                   HospitalRole @default(HOSPITAL)
+  facilityType           String?
+  ownershipType          String?
+  numberOfBeds           Int?
+  numberOfIcuBeds        Int?
+  numberOfVentilators    Int?
+  totalStaff             Int?
+  emergencyAvailable     Boolean?
+  ambulanceAvailable     Boolean?
+  specialtiesOffered     String[]
+  accreditationDetails   String?
+  registrationNumber     String?
+  yearEstablished        Int?
+  licenseNumber          String?
+  servicesOffered        String[]
+  websiteUrl             String?
+
+  address                Address?
+  location               Location?
+  operatingData          OperatingData?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+  
+
+model OperatingData {
+  id          String  @id @default(uuid())
+  hospitalId  String  @unique
+
+  open24Hours Boolean?
+  visitingHours String?
+  openTime    String?
+  closeTime   String?
+  weekDays    String[]
+
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+}

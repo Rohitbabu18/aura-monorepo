@@ -1,0 +1,4 @@
+enum HospitalRole {
+  HOSPITAL
+  CLINIC
+}
