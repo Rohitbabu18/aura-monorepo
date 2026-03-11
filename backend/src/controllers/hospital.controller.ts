@@ -133,7 +133,11 @@ export const deleteHospital = async (req: Request, res: Response) => {
 };
 
 export const getAllHospitals = async (req: Request, res: Response) => {
-  const hospitals = await prisma.hospital.findMany();
+  const hospitals = await prisma.hospital.findMany({
+    include: {
+      operatingData: true
+    }
+  });
 
   return res.status(200).json({
     message: 'Hospitals fetched successfully.',
@@ -153,7 +157,10 @@ export const getHospitalById = async (req: Request, res: Response) => {
     }
 
     const hospital = await prisma.hospital.findUnique({
-      where: { id: hospital_id }
+      where: { id: hospital_id },
+      include: {
+        operatingData: true
+      }
     });
 
     if (!hospital) {
