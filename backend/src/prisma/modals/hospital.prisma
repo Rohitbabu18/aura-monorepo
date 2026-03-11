@@ -35,12 +35,27 @@ model Hospital {
 model OperatingData {
   id          String  @id @default(uuid())
   hospitalId  String  @unique
-
-  open24Hours Boolean?
-  visitingHours String?
-  openTime    String?
-  closeTime   String?
-  weekDays    String[]
+  mondayEnabled    Boolean?
+  mondayStart      String?
+  mondayEnd        String?
+  tuesdayEnabled   Boolean?
+  tuesdayStart     String?
+  tuesdayEnd       String?
+  wednesdayEnabled Boolean?
+  wednesdayStart   String?
+  wednesdayEnd     String?
+  thursdayEnabled  Boolean?
+  thursdayStart    String?
+  thursdayEnd      String?
+  fridayEnabled    Boolean?
+  fridayStart      String?
+  fridayEnd        String?
+  saturdayEnabled  Boolean?
+  saturdayStart    String?
+  saturdayEnd      String?
+  sundayEnabled    Boolean?
+  sundayStart      String?
+  sundayEnd        String?
 
   hospital    Hospital @relation(fields: [hospitalId], references: [id])
 }

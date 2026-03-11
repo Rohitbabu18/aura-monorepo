@@ -17,6 +17,12 @@ import { API_URLS } from './api/urls';
 import useApi from './api/hooks/useApi';
 import './App.css';
 import Images from './halper/Images';
+import OperatingHoursField from './components/operatingHours/OperatingHoursField';
+import {
+  OperatingHoursData,
+  WEEK_DAYS,
+  createDefaultOperatingHours,
+} from './components/operatingHours/operatingHoursTypes';
 
 type RegistrationFormData = {
   userType: UserType | '';
@@ -40,7 +46,7 @@ type RegistrationFormData = {
   totalBeds: string;
   totalStaff: string;
   services: string[];
-  operatingHours: string;
+  operatingHours: OperatingHoursData;
   emergencyAvailable: boolean;
   ambulanceAvailable: boolean;
   websiteUrl: string;
@@ -124,7 +130,7 @@ const initialFormData: RegistrationFormData = {
   totalBeds: '',
   totalStaff: '',
   services: [],
-  operatingHours: '',
+  operatingHours: createDefaultOperatingHours(),
   emergencyAvailable: false,
   ambulanceAvailable: false,
   websiteUrl: '',
@@ -195,6 +201,16 @@ function RegistrationApp() {
     }));
   };
 
+  const handleOperatingHoursChange = (next: OperatingHoursData) => {
+    setFormData(prev => ({
+      ...prev,
+      operatingHours: next
+    }));
+    if (errors.operatingHours) {
+      setErrors(prev => ({ ...prev, operatingHours: '' }));
+    }
+  };
+
   const getTotalSteps = () => {
     if (formData.userType === 'hospital' || formData.userType === 'clinic') {
       return 3;
@@ -256,6 +272,24 @@ function RegistrationApp() {
       if (formData.totalStaff && !/^\d+$/.test(formData.totalStaff)) {
         newErrors.totalStaff = 'Please enter a valid number';
       }
+
+      const operating = formData.operatingHours;
+      const enabledDays = WEEK_DAYS.filter(day => operating.days[day.key].enabled);
+
+      if (operating.allDays) {
+        if (!operating.startTime || !operating.endTime) {
+          newErrors.operatingHours = 'Please provide start and end time for all days';
+        }
+      } else if (enabledDays.length > 0) {
+        const hasMissingTime = enabledDays.some(day => {
+          const hours = operating.days[day.key];
+          return !hours.start || !hours.end;
+        });
+
+        if (hasMissingTime) {
+          newErrors.operatingHours = 'Please provide start and end time for selected days';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -283,6 +317,34 @@ function RegistrationApp() {
     return trimmed ? trimmed : undefined;
   };
 
+  const buildOperatingHoursPayload = () => {
+    const operating = formData.operatingHours;
+    const dayEntries = WEEK_DAYS.map(day => {
+      const hours = operating.days[day.key];
+      const allDaysStart = operating.allDays ? operating.startTime : hours.start;
+      const allDaysEnd = operating.allDays ? operating.endTime : hours.end;
+      return {
+        day: day.key,
+        enabled: operating.allDays ? true : hours.enabled,
+        startTime: allDaysStart || undefined,
+        endTime: allDaysEnd || undefined
+      };
+    });
+
+    const anyEnabled = dayEntries.some(entry => entry.enabled);
+    if (!operating.allDays && !anyEnabled) {
+      return undefined;
+    }
+
+    if (operating.allDays && (!operating.startTime || !operating.endTime)) {
+      return undefined;
+    }
+
+    return {
+      days: dayEntries
+    };
+  };
+
   const buildHospitalUpdatePayload = () => {
     const role =
       formData.userType === 'hospital'
@@ -290,6 +352,8 @@ function RegistrationApp() {
         : formData.userType === 'clinic'
         ? 'CLINIC'
         : undefined;
+
+    const operatingHours = buildOperatingHoursPayload();
 
     return {
       name: toOptionalString(formData.name),
@@ -306,7 +370,7 @@ function RegistrationApp() {
       registrationNumber: toOptionalString(formData.registrationNo),
       yearEstablished: toOptionalNumber(formData.establishedYear),
       licenseNumber: toOptionalString(formData.licenseNumber),
-      operatingHours: toOptionalString(formData.operatingHours),
+      operatingHours,
       websiteUrl: toOptionalString(formData.websiteUrl),
     };
   };
@@ -397,7 +461,10 @@ function RegistrationApp() {
         showToast('Registration completed successfully.', 'success');
         clearStoredRegistrationId();
         setTimeout(() => {
-          setFormData(initialFormData);
+          setFormData({
+            ...initialFormData,
+            operatingHours: createDefaultOperatingHours()
+          });
           setCurrentStep(1);
           setRegistrationId(null);
           setSubmitSuccess(false);
@@ -779,13 +846,10 @@ function RegistrationApp() {
         </div>
 
         <div className="form-group">
-          <label>Operating Hours</label>
-          <input
-            type="text"
-            name="operatingHours"
+          <OperatingHoursField
             value={formData.operatingHours}
-            onChange={handleChange}
-            placeholder="e.g. 9 AM - 9 PM"
+            onChange={handleOperatingHoursChange}
+            error={errors.operatingHours}
           />
         </div>
       </div>

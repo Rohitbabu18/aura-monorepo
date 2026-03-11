@@ -1,4 +1,6 @@
 import { prisma } from '../lib/prisma.ts';
+import { normalizeOperatingHours } from '../lib/operatingHours.ts';
+import { sendError } from '../lib/errorHandler.ts';
 
 import type { Request, Response } from 'express'
 
@@ -34,10 +36,7 @@ export const registerHospital = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
-      message: 'Something went wrong',
-      error
-    });
+    return sendError(res, error, 'Something went wrong');
   }
 };
 
@@ -47,8 +46,9 @@ export const updateHospital = async (req: Request, res: Response) => {
       hospital_id,
       hospitalId,
       id: bodyId,
+      operatingHours,
       ...updateData
-    } = req.body;
+    } = req.body ?? {};
     const paramId = req.params?.hospitalId;
     const hospitalIdToUpdate = paramId || hospital_id || hospitalId || bodyId;
 
@@ -56,6 +56,16 @@ export const updateHospital = async (req: Request, res: Response) => {
       return res.status(400).json({
         message: 'Please provide hospital id.'
       });
+    }
+
+    const operatingData = normalizeOperatingHours(operatingHours);
+    if (operatingData) {
+      updateData.operatingData = {
+        upsert: {
+          create: operatingData,
+          update: operatingData
+        }
+      };
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -86,10 +96,7 @@ export const updateHospital = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
-      message: 'Something went wrong.',
-      error
-    });
+    return sendError(res, error, 'Something went wrong.');
   }
 };
 

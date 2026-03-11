@@ -505,6 +505,181 @@ select {
   font-weight: 500;
 }
 
+.checkbox-label.small {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+/* Operating Hours */
+.operating-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.operating-hours-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.operating-hours-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+}
+
+.summary-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.summary-text {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.secondary-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.secondary-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 10px;
+}
+
+.day-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.3s;
+}
+
+.day-chip input {
+  width: auto;
+  margin: 0;
+}
+
+.day-chip.active {
+  border-color: var(--primary);
+  background: var(--border);
+}
+
+.day-chip.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.time-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.time-field label {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+.day-time-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day-time-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.day-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 999;
+}
+
+.modal-card {
+  width: min(720px, 100%);
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  padding: 24px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-header h4 {
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
 /* Form Actions */
 .form-actions {
   display: flex;
@@ -737,6 +912,14 @@ select {
 
   .services-grid {
     grid-template-columns: 1fr;
+  }
+
+  .day-time-row {
+    grid-template-columns: 1fr;
+  }
+
+  .day-label {
+    margin-bottom: 4px;
   }
 
   .form-actions {

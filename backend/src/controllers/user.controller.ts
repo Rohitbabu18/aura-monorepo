@@ -3,6 +3,8 @@
 import bcrypt from 'bcryptjs';
 import type { Request, Response } from "express";
 import { prisma } from '../lib/prisma.ts';
+import { normalizeOperatingHours } from '../lib/operatingHours.ts';
+import { sendError } from '../lib/errorHandler.ts';
 /**
  * REGISTER / SIGN IN
  */
@@ -55,10 +57,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
-      message: 'Something went wrong',
-      error
-    });
+    return sendError(res, error, 'Something went wrong');
   }
 };
 
@@ -144,6 +143,8 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
           ? services.split(',').map((s: string) => s.trim()).filter(Boolean)
           : [];
 
+      const operatingData = normalizeOperatingHours(operatingHours);
+
       const hospital = await prisma.hospital.create({
         data: {
           name,
@@ -170,12 +171,11 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
               pincode: pinCode ? Number(pinCode) : undefined
             }
           } : undefined,
-          operatingData: operatingHours ? {
-            create: {
-              visitingHours: operatingHours,
-              weekDays: []
+          operatingData: operatingData
+            ? {
+              create: operatingData
             }
-          } : undefined
+            : undefined
         }
       });
 
@@ -230,10 +230,7 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
       data: safeUser
     });
   } catch (error) {
-    return res.status(500).json({
-      message: 'Something went wrong',
-      error
-    });
+    return sendError(res, error, 'Something went wrong');
   }
 };
 
@@ -415,9 +412,6 @@ export const updateUserById = async (req: Request, res: Response) => {
       data: safeUser
     });
   } catch (error) {
-    return res.status(500).json({
-      message: 'Something went wrong',
-      error
-    });
+    return sendError(res, error, 'Something went wrong');
   }
 };
