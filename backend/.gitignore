@@ -14,6 +14,7 @@ node_modules/
 Thumbs.db
 
 # .env file (Sensitive data)
+
 .env
 *.env
 
