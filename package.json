@@ -1,0 +1,13 @@
+{
+  "name": "aura-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "yarn workspace frontend start",
+    "dev:backend": "yarn workspace backend dev",
+    "build": "yarn workspaces run build"
+  }
+}
