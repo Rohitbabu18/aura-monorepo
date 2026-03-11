@@ -1,0 +1,17 @@
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  phone     String   @unique
+  email     String?  @unique
+  role                 String?
+  alternatePhone      String?
+  specialization       String?
+  experience           String?
+  registrationNumber   String?
+  registrationAuthority String?
+  password  String
+  address                Address?
+  location               Location?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
