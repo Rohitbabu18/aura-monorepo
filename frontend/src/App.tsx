@@ -34,6 +34,8 @@ type RegistrationFormData = {
   city: string;
   state: string;
   pinCode: string;
+  latitude: string;
+  longitude: string;
   specialization: string;
   experience: string;
   registrationNumber: string;
@@ -62,6 +64,8 @@ type RegisterPayload = Omit<
   | 'city'
   | 'state'
   | 'pinCode'
+  | 'latitude'
+  | 'longitude'
   | 'specialization'
   | 'experience'
   | 'registrationNumber'
@@ -118,6 +122,8 @@ const initialFormData: RegistrationFormData = {
   city: '',
   state: '',
   pinCode: '',
+  latitude: '',
+  longitude: '',
   specialization: '',
   experience: '',
   registrationNumber: '',
@@ -149,6 +155,8 @@ function RegistrationApp() {
   const [errors, setErrors] = useState<FormErrors>({});
   const { request, loading: isSubmitting } = useApi();
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
 
@@ -211,6 +219,34 @@ function RegistrationApp() {
     }
   };
 
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    setLocationStatus('Requesting location permission...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextLatitude = position.coords.latitude.toFixed(6);
+        const nextLongitude = position.coords.longitude.toFixed(6);
+        setFormData(prev => ({
+          ...prev,
+          latitude: nextLatitude,
+          longitude: nextLongitude
+        }));
+        setLocationStatus('Location captured successfully.');
+      },
+      (error) => {
+        setLocationStatus(error.message || 'Unable to fetch current location.');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
+  };
+
   const getTotalSteps = () => {
     if (formData.userType === 'hospital' || formData.userType === 'clinic') {
       return 3;
@@ -245,6 +281,10 @@ function RegistrationApp() {
       if (!formData.state) newErrors.state = 'Please select a state';
       if (!formData.pinCode.trim()) newErrors.pinCode = 'PIN code is required';
       else if (!/^\d{6}$/.test(formData.pinCode)) newErrors.pinCode = 'Please enter a valid 6-digit PIN code';
+      if ((formData.latitude.trim() && !formData.longitude.trim()) || (!formData.latitude.trim() && formData.longitude.trim())) {
+        newErrors.latitude = 'Please provide both latitude and longitude';
+        newErrors.longitude = 'Please provide both latitude and longitude';
+      }
 
       // Type specific validations
       if (formData.userType === 'hospital' || formData.userType === 'clinic') {
@@ -279,6 +319,8 @@ function RegistrationApp() {
       if (operating.allDays) {
         if (!operating.startTime || !operating.endTime) {
           newErrors.operatingHours = 'Please provide start and end time for all days';
+        } else if (!enabledDays.length) {
+          newErrors.operatingHours = 'Please select at least one day';
         }
       } else if (enabledDays.length > 0) {
         const hasMissingTime = enabledDays.some(day => {
@@ -325,14 +367,18 @@ function RegistrationApp() {
       const allDaysEnd = operating.allDays ? operating.endTime : hours.end;
       return {
         day: day.key,
-        enabled: operating.allDays ? true : hours.enabled,
-        startTime: allDaysStart || undefined,
-        endTime: allDaysEnd || undefined
+        enabled: hours.enabled,
+        startTime: hours.enabled ? allDaysStart || undefined : undefined,
+        endTime: hours.enabled ? allDaysEnd || undefined : undefined
       };
     });
 
     const anyEnabled = dayEntries.some(entry => entry.enabled);
     if (!operating.allDays && !anyEnabled) {
+      return undefined;
+    }
+
+    if (operating.allDays && !anyEnabled) {
       return undefined;
     }
 
@@ -355,6 +401,20 @@ function RegistrationApp() {
 
     const operatingHours = buildOperatingHoursPayload();
 
+    const addressPayload = {
+      complete: toOptionalString(formData.address),
+      city: toOptionalString(formData.city),
+      state: toOptionalString(formData.state),
+      pincode: toOptionalString(formData.pinCode),
+      location:
+        formData.latitude.trim() && formData.longitude.trim()
+          ? {
+              latitude: toOptionalString(formData.latitude),
+              longitude: toOptionalString(formData.longitude),
+            }
+          : undefined,
+    };
+
     return {
       name: toOptionalString(formData.name),
       email: toOptionalString(formData.email),
@@ -370,6 +430,14 @@ function RegistrationApp() {
       registrationNumber: toOptionalString(formData.registrationNo),
       yearEstablished: toOptionalNumber(formData.establishedYear),
       licenseNumber: toOptionalString(formData.licenseNumber),
+      address:
+        addressPayload.complete ||
+        addressPayload.city ||
+        addressPayload.state ||
+        addressPayload.pincode ||
+        addressPayload.location
+          ? addressPayload
+          : undefined,
       operatingHours,
       websiteUrl: toOptionalString(formData.websiteUrl),
     };
@@ -379,6 +447,20 @@ function RegistrationApp() {
     const role = formData.userType
       ? formData.userType.toUpperCase()
       : undefined;
+
+    const addressPayload = {
+      complete: toOptionalString(formData.address),
+      city: toOptionalString(formData.city),
+      state: toOptionalString(formData.state),
+      pincode: toOptionalString(formData.pinCode),
+      location:
+        formData.latitude.trim() && formData.longitude.trim()
+          ? {
+              latitude: toOptionalString(formData.latitude),
+              longitude: toOptionalString(formData.longitude),
+            }
+          : undefined,
+    };
 
     return {
       name: toOptionalString(formData.name),
@@ -390,10 +472,14 @@ function RegistrationApp() {
       experience: toOptionalNumber(formData.experience),
       registrationNumber: toOptionalString(formData.registrationNumber),
       registrationAuthority: toOptionalString(formData.registrationAuthority),
-      address: toOptionalString(formData.address),
-      city: toOptionalString(formData.city),
-      state: toOptionalString(formData.state),
-      pinCode: toOptionalString(formData.pinCode),
+      address:
+        addressPayload.complete ||
+        addressPayload.city ||
+        addressPayload.state ||
+        addressPayload.pincode ||
+        addressPayload.location
+          ? addressPayload
+          : undefined,
       websiteUrl: toOptionalString(formData.websiteUrl),
     };
   };
@@ -603,7 +689,22 @@ function RegistrationApp() {
 
   const renderStep2 = () => (
     <div className="step-content">
-      <h3>Address & Registration Details</h3>
+      <div className="section-title-row">
+        <h3>Address & Registration Details</h3>
+        <button
+          type="button"
+          className="location-button"
+          onClick={() => {
+            setIsLocationModalOpen(true);
+            setLocationStatus(null);
+          }}
+          aria-label="Set location"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a7 7 0 0 1 7 7c0 5.1-7 13-7 13S5 14.1 5 9a7 7 0 0 1 7-7zm0 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+          </svg>
+        </button>
+      </div>
       
       {/* Address */}
       <div className="form-group">
@@ -621,16 +722,17 @@ function RegistrationApp() {
 
       <div className="form-row">
         <div className="form-group">
-          <label>City <span className="required">*</span></label>
+          <label>PIN Code <span className="required">*</span></label>
           <input
             type="text"
-            name="city"
-            value={formData.city}
+            name="pinCode"
+            value={formData.pinCode}
             onChange={handleChange}
-            placeholder="Enter city"
-            className={errors.city ? 'error' : ''}
+            placeholder="6-digit PIN"
+            maxLength={6}
+            className={errors.pinCode ? 'error' : ''}
           />
-          {errors.city && <span className="error">{errors.city}</span>}
+          {errors.pinCode && <span className="error">{errors.pinCode}</span>}
         </div>
 
         <div className="form-group">
@@ -650,17 +752,16 @@ function RegistrationApp() {
         </div>
 
         <div className="form-group">
-          <label>PIN Code <span className="required">*</span></label>
+          <label>City / Village <span className="required">*</span></label>
           <input
             type="text"
-            name="pinCode"
-            value={formData.pinCode}
+            name="city"
+            value={formData.city}
             onChange={handleChange}
-            placeholder="6-digit PIN"
-            maxLength={6}
-            className={errors.pinCode ? 'error' : ''}
+            placeholder="Enter city or village"
+            className={errors.city ? 'error' : ''}
           />
-          {errors.pinCode && <span className="error">{errors.pinCode}</span>}
+          {errors.city && <span className="error">{errors.city}</span>}
         </div>
       </div>
 
@@ -741,6 +842,73 @@ function RegistrationApp() {
           </div>
         </>
       )}
+
+      <AnimatePresence>
+        {isLocationModalOpen && (
+          <motion.div
+            className="modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="modal-card"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 10, opacity: 0 }}
+            >
+              <div className="modal-header">
+                <h4>Location Details</h4>
+                <button
+                  type="button"
+                  className="modal-close"
+                  onClick={() => setIsLocationModalOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="modal-body">
+                <button type="button" className="location-action-btn" onClick={handleUseCurrentLocation}>
+                  Use Current Location
+                </button>
+                <div className="location-grid">
+                  <div className="form-group">
+                    <label>Latitude</label>
+                    <input
+                      type="number"
+                      name="latitude"
+                      value={formData.latitude}
+                      onChange={handleChange}
+                      placeholder="e.g. 12.9716"
+                      className={errors.latitude ? 'error' : ''}
+                    />
+                    {errors.latitude && <span className="error">{errors.latitude}</span>}
+                  </div>
+                  <div className="form-group">
+                    <label>Longitude</label>
+                    <input
+                      type="number"
+                      name="longitude"
+                      value={formData.longitude}
+                      onChange={handleChange}
+                      placeholder="e.g. 77.5946"
+                      className={errors.longitude ? 'error' : ''}
+                    />
+                    {errors.longitude && <span className="error">{errors.longitude}</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="primary-btn" onClick={() => setIsLocationModalOpen(false)}>
+                  Done
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Doctor specific fields */}
       {formData.userType === 'doctor' && (

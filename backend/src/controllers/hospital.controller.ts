@@ -47,6 +47,7 @@ export const updateHospital = async (req: Request, res: Response) => {
       hospitalId,
       id: bodyId,
       operatingHours,
+      address: addressPayload,
       ...updateData
     } = req.body ?? {};
     const paramId = req.params?.hospitalId;
@@ -64,6 +65,64 @@ export const updateHospital = async (req: Request, res: Response) => {
         upsert: {
           create: operatingData,
           update: operatingData
+        }
+      };
+    }
+
+    delete (updateData as Record<string, unknown>).address;
+    delete (updateData as Record<string, unknown>).city;
+    delete (updateData as Record<string, unknown>).state;
+    delete (updateData as Record<string, unknown>).pinCode;
+    delete (updateData as Record<string, unknown>).pincode;
+    delete (updateData as Record<string, unknown>).latitude;
+    delete (updateData as Record<string, unknown>).longitude;
+
+    const addressBody = addressPayload ?? req.body?.address ?? {};
+    const address = typeof addressBody === 'object' ? addressBody?.complete : req.body?.address;
+    const city = addressBody?.city ?? req.body?.city;
+    const state = addressBody?.state ?? req.body?.state;
+    const resolvedPinCode =
+      addressBody?.pincode ?? req.body?.pinCode ?? req.body?.pincode;
+    const locationBody = addressBody?.location ?? req.body?.location ?? {};
+    const resolvedLatitude =
+      locationBody?.latitude ?? locationBody?.lat ?? req.body?.latitude ?? req.body?.lat;
+    const resolvedLongitude =
+      locationBody?.longitude ?? locationBody?.lng ?? req.body?.longitude ?? req.body?.lng;
+    const hasLocation = resolvedLatitude != null && resolvedLongitude != null;
+
+    if (address || city || state || resolvedPinCode || hasLocation) {
+      updateData.address = {
+        upsert: {
+          create: {
+            complete: address,
+            city,
+            state,
+            pincode: resolvedPinCode ? Number(resolvedPinCode) : undefined,
+            location: hasLocation ? {
+              create: {
+                latitude: String(resolvedLatitude),
+                longitude: String(resolvedLongitude)
+              }
+            } : undefined
+          },
+          update: {
+            complete: address,
+            city,
+            state,
+            pincode: resolvedPinCode ? Number(resolvedPinCode) : undefined,
+            location: hasLocation ? {
+              upsert: {
+                create: {
+                  latitude: String(resolvedLatitude),
+                  longitude: String(resolvedLongitude)
+                },
+                update: {
+                  latitude: String(resolvedLatitude),
+                  longitude: String(resolvedLongitude)
+                }
+              }
+            } : undefined
+          }
         }
       };
     }
@@ -159,7 +218,27 @@ export const getHospitalById = async (req: Request, res: Response) => {
     const hospital = await prisma.hospital.findUnique({
       where: { id: hospital_id },
       include: {
-        operatingData: true
+        operatingData: {
+          omit:{
+            id:true,
+            hospitalId:true
+          }
+        },
+        address:{
+          omit:{
+            id:true,
+            hospitalId:true,
+            userId:true,
+          },
+          include:{
+            location:{
+              omit:{
+                id:true,
+                 addressId:true
+              }
+            }
+          }
+        }
       }
     });
 

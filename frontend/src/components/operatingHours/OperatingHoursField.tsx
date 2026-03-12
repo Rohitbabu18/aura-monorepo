@@ -14,7 +14,12 @@ const OperatingHoursField = ({ value, onChange, error }: Props) => {
   const summary = useMemo(() => {
     const enabledDays = WEEK_DAYS.filter(day => value.days[day.key].enabled);
     if (value.allDays && value.startTime && value.endTime) {
-      return `All days: ${value.startTime} - ${value.endTime}`;
+      if (enabledDays.length === WEEK_DAYS.length) {
+        return `All days: ${value.startTime} - ${value.endTime}`;
+      }
+      if (enabledDays.length) {
+        return `${enabledDays.length} day(s): ${value.startTime} - ${value.endTime}`;
+      }
     }
     if (!enabledDays.length) {
       return 'No operating hours set';

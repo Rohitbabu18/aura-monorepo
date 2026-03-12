@@ -80,10 +80,16 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
       req.body?.alternateContact ??
       req.body?.alternate_contact_number;
 
-    const address = req.body?.address;
-    const city = req.body?.city;
-    const state = req.body?.state;
-    const pinCode = req.body?.pinCode ?? req.body?.pincode;
+    const addressBody = req.body?.address ?? {};
+    const address = typeof addressBody === 'object' ? addressBody?.complete : req.body?.address;
+    const city = addressBody?.city ?? req.body?.city;
+    const state = addressBody?.state ?? req.body?.state;
+    const pinCode = addressBody?.pincode ?? req.body?.pinCode ?? req.body?.pincode;
+    const locationBody = addressBody?.location ?? req.body?.location ?? {};
+    const latitude =
+      locationBody?.latitude ?? locationBody?.lat ?? req.body?.latitude ?? req.body?.lat;
+    const longitude =
+      locationBody?.longitude ?? locationBody?.lng ?? req.body?.longitude ?? req.body?.lng;
 
     const specialization = req.body?.specialization;
     const experience = req.body?.experience;
@@ -168,7 +174,13 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
               complete: address,
               city,
               state,
-              pincode: pinCode ? Number(pinCode) : undefined
+              pincode: pinCode ? Number(pinCode) : undefined,
+              location: latitude != null && longitude != null ? {
+                create: {
+                  latitude: String(latitude),
+                  longitude: String(longitude)
+                }
+              } : undefined
             }
           } : undefined,
           operatingData: operatingData
@@ -217,7 +229,13 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
             complete: address,
             city,
             state,
-            pincode: pinCode ? Number(pinCode) : undefined
+            pincode: pinCode ? Number(pinCode) : undefined,
+            location: latitude != null && longitude != null ? {
+              create: {
+                latitude: String(latitude),
+                longitude: String(longitude)
+              }
+            } : undefined
           }
         } : undefined
       }
@@ -346,10 +364,16 @@ export const updateUserById = async (req: Request, res: Response) => {
 
     const body = req.body ?? {};
 
-    const address = body?.address;
-    const city = body?.city;
-    const state = body?.state;
-    const pinCode = body?.pinCode ?? body?.pincode;
+    const addressBody = body?.address ?? {};
+    const address = typeof addressBody === 'object' ? addressBody?.complete : body?.address;
+    const city = addressBody?.city ?? body?.city;
+    const state = addressBody?.state ?? body?.state;
+    const pinCode = addressBody?.pincode ?? body?.pinCode ?? body?.pincode;
+    const locationBody = addressBody?.location ?? body?.location ?? {};
+    const latitude =
+      locationBody?.latitude ?? locationBody?.lat ?? body?.latitude ?? body?.lat;
+    const longitude =
+      locationBody?.longitude ?? locationBody?.lng ?? body?.longitude ?? body?.lng;
 
     const updateData: Record<string, unknown> = {
       name: body?.name,
@@ -363,20 +387,39 @@ export const updateUserById = async (req: Request, res: Response) => {
       registrationAuthority: body?.registrationAuthority
     };
 
-    if (address || city || state || pinCode) {
+    if (address || city || state || pinCode || latitude != null || longitude != null) {
+      const hasLocation = latitude != null && longitude != null;
       updateData.address = {
         upsert: {
           create: {
             complete: address,
             city,
             state,
-            pincode: pinCode ? Number(pinCode) : undefined
+            pincode: pinCode ? Number(pinCode) : undefined,
+            location: hasLocation ? {
+              create: {
+                latitude: String(latitude),
+                longitude: String(longitude)
+              }
+            } : undefined
           },
           update: {
             complete: address,
             city,
             state,
-            pincode: pinCode ? Number(pinCode) : undefined
+            pincode: pinCode ? Number(pinCode) : undefined,
+            location: hasLocation ? {
+              upsert: {
+                create: {
+                  latitude: String(latitude),
+                  longitude: String(longitude)
+                },
+                update: {
+                  latitude: String(latitude),
+                  longitude: String(longitude)
+                }
+              }
+            } : undefined
           }
         }
       };

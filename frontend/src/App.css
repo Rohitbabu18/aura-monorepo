@@ -294,6 +294,82 @@ position: fixed;
   border-bottom: 2px solid var(--border);
 }
 
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+.section-title-row h3 {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.location-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.location-button svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--primary);
+}
+
+.location-button:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.location-action-btn {
+  align-self: flex-start;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.location-action-btn:hover {
+  background: var(--primary-light);
+}
+
+.location-action-btn.secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.location-action-btn.secondary:hover {
+  background: rgba(74, 144, 226, 0.08);
+}
+
+.location-status {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
 /* Form Elements */
 .form-group {
   margin-bottom: 20px;
@@ -678,6 +754,21 @@ select {
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+.primary-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
 }
 
 /* Form Actions */

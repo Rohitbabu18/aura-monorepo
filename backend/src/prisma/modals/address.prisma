@@ -9,8 +9,17 @@ model Address {
   state       String?
   country     String?
   pincode     Int?
+  location    LocationData?
 
   user        User?     @relation(fields: [userId], references: [id])
   hospital    Hospital? @relation(fields: [hospitalId], references: [id])
 
+}
+
+model LocationData {
+  id          String   @id @default(uuid())
+  latitude    String
+  longitude   String
+  addressId   String   @unique
+  address     Address  @relation(fields: [addressId], references: [id])
 }

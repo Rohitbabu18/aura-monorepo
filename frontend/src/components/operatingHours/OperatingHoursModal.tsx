@@ -21,7 +21,12 @@ const OperatingHoursModal = ({ isOpen, value, onChange, onClose }: Props) => {
     const nextDays = { ...value.days };
     if (checked) {
       WEEK_DAYS.forEach(day => {
-        nextDays[day.key] = { ...nextDays[day.key], enabled: true };
+        nextDays[day.key] = {
+          ...nextDays[day.key],
+          enabled: true,
+          start: value.startTime || nextDays[day.key].start,
+          end: value.endTime || nextDays[day.key].end,
+        };
       });
     }
 
@@ -35,7 +40,6 @@ const OperatingHoursModal = ({ isOpen, value, onChange, onClose }: Props) => {
   const handleDayToggle = (dayKey: WeekDayKey, checked: boolean) => {
     update({
       ...value,
-      allDays: false,
       days: {
         ...value.days,
         [dayKey]: {
@@ -47,9 +51,20 @@ const OperatingHoursModal = ({ isOpen, value, onChange, onClose }: Props) => {
   };
 
   const handleAllDaysTimeChange = (field: 'startTime' | 'endTime', input: string) => {
+    const nextDays = { ...value.days };
+    WEEK_DAYS.forEach(day => {
+      if (nextDays[day.key].enabled) {
+        nextDays[day.key] = {
+          ...nextDays[day.key],
+          [field === 'startTime' ? 'start' : 'end']: input
+        };
+      }
+    });
+
     update({
       ...value,
-      [field]: input
+      [field]: input,
+      days: nextDays
     });
   };
 
@@ -87,19 +102,18 @@ const OperatingHoursModal = ({ isOpen, value, onChange, onClose }: Props) => {
               checked={value.allDays}
               onChange={(e) => handleAllDaysToggle(e.target.checked)}
             />
-            <span>Select all days</span>
+            <span>Apply same time to selected days</span>
           </label>
 
           <div className="days-grid">
             {WEEK_DAYS.map((day) => (
               <label
                 key={day.key}
-                className={`day-chip ${value.days[day.key].enabled ? 'active' : ''} ${value.allDays ? 'disabled' : ''}`}
+                className={`day-chip ${value.days[day.key].enabled ? 'active' : ''}`}
               >
                 <input
                   type="checkbox"
                   checked={value.days[day.key].enabled}
-                  disabled={value.allDays}
                   onChange={(e) => handleDayToggle(day.key, e.target.checked)}
                 />
                 <span>{day.label}</span>
