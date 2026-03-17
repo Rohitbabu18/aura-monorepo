@@ -1,7 +1,7 @@
 model Address {
   id          String   @id @default(uuid())
 
-  doctorId      String?  @unique
+  doctorId    String?  @unique
   hospitalId  String?  @unique
 
   complete    String?
@@ -11,7 +11,7 @@ model Address {
   pincode     Int?
   location    LocationData?
 
-  doctor        Doctor?     @relation(fields: [doctorId], references: [id])
+  doctor      Doctor?   @relation(fields: [doctorId], references: [id])
   hospital    Hospital? @relation(fields: [hospitalId], references: [id])
 
 }

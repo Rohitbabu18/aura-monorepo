@@ -228,13 +228,13 @@ export const getHospitalById = async (req: Request, res: Response) => {
           omit:{
             id:true,
             hospitalId:true,
-            doctorId:true,
+            doctorId:true
           },
           include:{
             location:{
               omit:{
                 id:true,
-                 addressId:true
+                addressId:true
               }
             }
           }
