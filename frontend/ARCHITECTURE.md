@@ -28,7 +28,7 @@ Centralized configuration and static data.
 **Files:**
 - `theme.js` - Light and dark theme color definitions
 - `typography.js` - Font families, sizes, weights, line heights
-- `appConstants.js` - App config, user types, states, specializations, validation patterns
+- `appConstants.js` - App config, doctor types, states, specializations, validation patterns
 
 ### `/src/context/`
 React Context providers for global state.

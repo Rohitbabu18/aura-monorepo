@@ -210,7 +210,7 @@ mobile-backend/
 │   ├── prisma/
 │   │   │ 
 │   │   ├── modals/
-│   │   │     ├── user.prisma           # Database schema 
+│   │   │     ├── doctor.prisma           # Database schema 
 │   │   │     └── hospital.prisma       # Database schema
 │   │   └── schema.prisma               # Database schema ( main )
 │   ├── generated/
@@ -219,9 +219,9 @@ mobile-backend/
 │   ├── lib/
 │   │   └── prisma.js          # Shared Prisma instance
 │   ├── controllers/
-│   │   └── user.controller.js  # Business logic
+│   │   └── doctor.controller.js  # Business logic
 │   ├── routes/
-│   │   └── user.routes.js      # API routes
+│   │   └── doctor.routes.js      # API routes
 │   ├── app.js                  # Express app setup
 │   └── server.js               # Server entry point
 ├── prisma.config.ts            # Prisma 7 configuration
@@ -362,7 +362,7 @@ GET http://localhost:3000/health
 
 ### User Routes
 ```bash
-POST   http://localhost:3000/api/users/register    # Register/Login user
+POST   http://localhost:3000/api/users/register    # Register/Login doctor
 ```
 
 ### Example Request (Register/Login)
@@ -444,7 +444,7 @@ export { prisma, pool };
 import { prisma } from '../lib/prisma.ts';
 
 // Use prisma as normal
-const users = await prisma.user.findMany();
+const users = await prisma.doctor.findMany();
 ```
 
 ---
@@ -535,7 +535,7 @@ curl -X POST http://localhost:3000/api/users/register \
   -d '{"email":"test@example.com","password":"password123"}'
 ```
 
-Expected: Success response with user data.
+Expected: Success response with doctor data.
 
 ---
 

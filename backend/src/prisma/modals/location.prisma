@@ -1,11 +1,11 @@
 model Location {
   id          String   @id @default(uuid())
   hospitalId  String   @unique
-  userId      String   @unique
+  doctorId      String   @unique
   latitude    Float
   longitude   Float
 
   hospital    Hospital @relation(fields: [hospitalId], references: [id])
-  user    User @relation(fields: [userId], references: [id])
+  doctor    Doctor @relation(fields: [doctorId], references: [id])
 
 }

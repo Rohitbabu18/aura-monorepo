@@ -19,7 +19,7 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    const exists = await prisma.user.findUnique({
+    const exists = await prisma.doctor.findUnique({
       where:{ phone }
     });
 
@@ -41,10 +41,10 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // New user → register
+    // New doctor → register
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    const doctor = await prisma.doctor.create({
       data:{
         phone,
         password: hashedPassword
@@ -53,7 +53,7 @@ export const register = async (req: Request, res: Response) => {
 
     return res.status(201).json({
       message: 'User Sign Up successfully.',
-      data: user
+      data: doctor
     });
 
   } catch (error) {
@@ -198,7 +198,7 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
     }
 
     const userOrConditions = [{ phone }, ...(email ? [{ email }] : [])];
-    const userExists = await prisma.user.findFirst({
+    const userExists = await prisma.doctor.findFirst({
       where: {
         OR: userOrConditions
       }
@@ -212,7 +212,7 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash('12345678', 10);
 
-    const user = await prisma.user.create({
+    const doctor = await prisma.doctor.create({
       data: {
         name,
         phone,
@@ -241,7 +241,7 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
       }
     });
 
-    const { password: _password, ...safeUser } = user;
+    const { password: _password, ...safeUser } = doctor;
 
     return res.status(201).json({
       message: 'User registered successfully.',
@@ -259,17 +259,17 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     const  user_id  = req.params.id as string;
 
-    const exists = await prisma.user.findUnique({
+    const exists = await prisma.doctor.findUnique({
       where: { id: user_id }
     });
 
     if (!exists) {
       return res.status(403).json({
-        message: 'Invalid user id.'
+        message: 'Invalid doctor id.'
       });
     }
 
-    const userDelete = await prisma.user.delete({
+    const userDelete = await prisma.doctor.delete({
       where: { id: user_id }
     });
 
@@ -281,7 +281,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
   } catch (error) {
     return res.status(403).json({
-      message: 'Invalid user id.',
+      message: 'Invalid doctor id.',
       error
     });
   }
@@ -291,7 +291,7 @@ export const deleteUser = async (req: Request, res: Response) => {
  * GET ALL USERS
  */
 export const getAllUsers = async (req: Request, res: Response) => {
-  const users = await prisma.user.findMany({
+  const users = await prisma.doctor.findMany({
     select: {
       id: true,
       name: true,
@@ -316,11 +316,11 @@ export const getUserById = async (req: Request, res: Response) => {
 
     if (!user_id) {
       return res.status(404).json({
-        message: 'Please provide user id.'
+        message: 'Please provide doctor id.'
       });
     }
 
-    const user = await prisma.user.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id: user_id },
       select: {
         id: true,
@@ -330,7 +330,7 @@ export const getUserById = async (req: Request, res: Response) => {
       }
     });
 
-    if (!user) {
+    if (!doctor) {
       return res.status(404).json({
         message: 'User not found.'
       });
@@ -338,7 +338,7 @@ export const getUserById = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: 'User fetched successfully.',
-      data: user
+      data: doctor
     });
 
   } catch (error) {
@@ -358,7 +358,7 @@ export const updateUserById = async (req: Request, res: Response) => {
 
     if (!user_id) {
       return res.status(400).json({
-        message: 'Please provide user id.'
+        message: 'Please provide doctor id.'
       });
     }
 
@@ -432,17 +432,17 @@ export const updateUserById = async (req: Request, res: Response) => {
       });
     }
 
-    const exists = await prisma.user.findUnique({
+    const exists = await prisma.doctor.findUnique({
       where: { id: user_id }
     });
 
     if (!exists) {
       return res.status(404).json({
-        message: 'Invalid user id.'
+        message: 'Invalid doctor id.'
       });
     }
 
-    const userUpdate = await prisma.user.update({
+    const userUpdate = await prisma.doctor.update({
       where: { id: user_id },
       data: updateData
     });

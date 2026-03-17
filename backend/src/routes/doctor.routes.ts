@@ -6,7 +6,7 @@ import {
   getAllUsers,
   getUserById,
   updateUserById
-} from '../controllers/user.controller.ts';
+} from '../controllers/doctor.controller.ts';
 
 const router = Router();
 

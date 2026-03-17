@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import userRoutes from './routes/user.routes.ts';
+import doctorRoutes from './routes/doctor.routes.ts';
 import hospitalRoutes from './routes/hospital.routes.ts';
 
 const app = express();
@@ -23,7 +23,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/hospital', hospitalRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/doctor', doctorRoutes);
 
 
 export default app;
