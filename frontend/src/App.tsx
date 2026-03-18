@@ -156,7 +156,6 @@ function RegistrationApp() {
   const { request, loading: isSubmitting } = useApi();
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [locationStatus, setLocationStatus] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
 
@@ -221,11 +220,9 @@ function RegistrationApp() {
 
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setLocationStatus('Geolocation is not supported by this browser.');
       return;
     }
 
-    setLocationStatus('Requesting location permission...');
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const nextLatitude = position.coords.latitude.toFixed(6);
@@ -235,10 +232,9 @@ function RegistrationApp() {
           latitude: nextLatitude,
           longitude: nextLongitude
         }));
-        setLocationStatus('Location captured successfully.');
       },
       (error) => {
-        setLocationStatus(error.message || 'Unable to fetch current location.');
+        console.log(error.message || 'Unable to fetch current location.');
       },
       {
         enableHighAccuracy: true,
@@ -696,7 +692,6 @@ function RegistrationApp() {
           className="location-button"
           onClick={() => {
             setIsLocationModalOpen(true);
-            setLocationStatus(null);
           }}
           aria-label="Set location"
         >
