@@ -490,9 +490,9 @@ function RegistrationApp() {
         formData.userType === 'hospital' || formData.userType === 'clinic';
       const isFirstStep = currentStep === 1;
       const storedId = registrationId ?? getStoredRegistrationId();
-
+      const apiUrl=isHospitalOrClinic?API_URLS.registerHospital:API_URLS.registerDoctor
       if (isFirstStep) {
-        const { data } = await request<RegisterResponse>(API_URLS.registerUser, {
+        const { data } = await request<RegisterResponse>(apiUrl, {
           method: 'POST',
           body: buildRegisterPayload(),
         });

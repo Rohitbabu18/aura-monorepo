@@ -23,8 +23,7 @@ model Hospital {
   servicesOffered        String[]
   websiteUrl             String?
 
-  address                Address?
-  location               Location?
+  address                Address? 
   operatingData          OperatingData?
 
   createdAt              DateTime @default(now())

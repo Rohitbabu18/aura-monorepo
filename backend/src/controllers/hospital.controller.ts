@@ -7,15 +7,22 @@ import type { Request, Response } from 'express'
 export const registerHospital = async (req: Request, res: Response) => {
   try {
     const { email, role, name, phone, alternatePhone } = req.body;
+    if (!email && !phone) {
+      return res.status(400).json({
+        message: 'email or phone is required for hospital/clinic.'
+      });
+    }
 
-    const exists = await prisma.hospital.findUnique({
-      where: { email }
-    })
-
+    const hospitalOrConditions = [{ email }, ...(phone ? [{ phone }] : [])];
+    const exists = await prisma.hospital.findFirst({
+      where: {
+        OR: hospitalOrConditions
+      }
+    });
     // User exists → try login
     if (exists) {
       return res.status(403).json({
-        message: 'Email already in use, Please provide valid password',
+        message: 'Email or Phone already in use, Please provide valid one',
         code: 403
       });
     }
@@ -161,7 +168,7 @@ export const updateHospital = async (req: Request, res: Response) => {
 
 export const deleteHospital = async (req: Request, res: Response) => {
   try {
-    const  hospital_id  = req?.params?.id as string;
+    const hospital_id = req?.params?.id as string;
 
     const exists = await prisma.hospital.findUnique({
       where: { id: hospital_id }
@@ -207,7 +214,7 @@ export const getAllHospitals = async (req: Request, res: Response) => {
 
 export const getHospitalById = async (req: Request, res: Response) => {
   try {
-    const  hospital_id  = req?.params?.id as string;
+    const hospital_id = req?.params?.id as string;
 
     if (!hospital_id) {
       return res.status(404).json({
@@ -219,22 +226,23 @@ export const getHospitalById = async (req: Request, res: Response) => {
       where: { id: hospital_id },
       include: {
         operatingData: {
-          omit:{
-            id:true,
-            hospitalId:true
+          omit: {
+            id: true,
+            hospitalId: true
           }
         },
-        address:{
-          omit:{
-            id:true,
-            hospitalId:true,
-            doctorId:true
+        address: {
+          omit: {
+            id: true,
+            hospitalId: true,
+            doctorId: true,
+            userId: true
           },
-          include:{
-            location:{
-              omit:{
-                id:true,
-                addressId:true
+          include: {
+            location: {
+              omit: {
+                id: true,
+                addressId: true
               }
             }
           }

@@ -10,8 +10,7 @@ model Doctor {
   registrationNumber   String?
   registrationAuthority String?
   password  String
-  address                Address?
-  location               Location?
+  address                Address? 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

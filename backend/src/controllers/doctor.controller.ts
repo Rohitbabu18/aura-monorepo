@@ -79,35 +79,7 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
       req.body?.alternateContactNumber ??
       req.body?.alternateContact ??
       req.body?.alternate_contact_number;
-
-    const addressBody = req.body?.address ?? {};
-    const address = typeof addressBody === 'object' ? addressBody?.complete : req.body?.address;
-    const city = addressBody?.city ?? req.body?.city;
-    const state = addressBody?.state ?? req.body?.state;
-    const pinCode = addressBody?.pincode ?? req.body?.pinCode ?? req.body?.pincode;
-    const locationBody = addressBody?.location ?? req.body?.location ?? {};
-    const latitude =
-      locationBody?.latitude ?? locationBody?.lat ?? req.body?.latitude ?? req.body?.lat;
-    const longitude =
-      locationBody?.longitude ?? locationBody?.lng ?? req.body?.longitude ?? req.body?.lng;
-
-    const specialization = req.body?.specialization;
-    const experience = req.body?.experience;
-    const registrationNumber = req.body?.registrationNumber;
-    const registrationAuthority = req.body?.registrationAuthority;
-
-    const facilityType = req.body?.facilityType;
-    const establishedYear = req.body?.establishedYear;
-    const ownershipType = req.body?.ownershipType;
-    const registrationNo = req.body?.registrationNo;
-    const licenseNumber = req.body?.licenseNumber;
-    const totalBeds = req.body?.totalBeds;
-    const totalStaff = req.body?.totalStaff;
-    const services = req.body?.services;
-    const operatingHours = req.body?.operatingHours;
-    const emergencyAvailable = req.body?.emergencyAvailable;
-    const ambulanceAvailable = req.body?.ambulanceAvailable;
-    const websiteUrl = req.body?.websiteUrl;
+ 
 
     if (!userType) {
       return res.status(400).json({
@@ -121,81 +93,7 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
       });
     }
 
-    const isHospital = userType === 'hospital' || userType === 'clinic';
-
-    if (isHospital) {
-      if (!email) {
-        return res.status(400).json({
-          message: 'email is required for hospital/clinic.'
-        });
-      }
-
-      const hospitalOrConditions = [{ email }, ...(phone ? [{ phone }] : [])];
-      const exists = await prisma.hospital.findFirst({
-        where: {
-          OR: hospitalOrConditions
-        }
-      });
-
-      if (exists) {
-        return res.status(409).json({
-          message: 'Hospital or clinic already exists.'
-        });
-      }
-
-      const servicesArray = Array.isArray(services)
-        ? services
-        : typeof services === 'string'
-          ? services.split(',').map((s: string) => s.trim()).filter(Boolean)
-          : [];
-
-      const operatingData = normalizeOperatingHours(operatingHours);
-
-      const hospital = await prisma.hospital.create({
-        data: {
-          name,
-          phone,
-          email,
-          alternatePhone,
-          role: userType === 'clinic' ? 'CLINIC' : 'HOSPITAL',
-          facilityType,
-          ownershipType,
-          yearEstablished: establishedYear ? Number(establishedYear) : undefined,
-          registrationNumber: registrationNo ?? registrationNumber,
-          licenseNumber,
-          numberOfBeds: totalBeds ? Number(totalBeds) : undefined,
-          totalStaff: totalStaff ? Number(totalStaff) : undefined,
-          servicesOffered: servicesArray,
-          emergencyAvailable,
-          ambulanceAvailable,
-          websiteUrl,
-          address: address || city || state || pinCode ? {
-            create: {
-              complete: address,
-              city,
-              state,
-              pincode: pinCode ? Number(pinCode) : undefined,
-              location: latitude != null && longitude != null ? {
-                create: {
-                  latitude: String(latitude),
-                  longitude: String(longitude)
-                }
-              } : undefined
-            }
-          } : undefined,
-          operatingData: operatingData
-            ? {
-              create: operatingData
-            }
-            : undefined
-        }
-      });
-
-      return res.status(201).json({
-        message: 'Hospital/Clinic registered successfully.',
-        data: hospital
-      });
-    }
+      
 
     const userOrConditions = [{ phone }, ...(email ? [{ email }] : [])];
     const userExists = await prisma.doctor.findFirst({
@@ -217,27 +115,9 @@ export const registerFromBasicInfo = async (req: Request, res: Response) => {
         name,
         phone,
         email,
-        alternatePhone,
-        specialization,
-        experience: experience != null ? String(experience) : undefined,
-        registrationNumber,
-        registrationAuthority,
+        alternatePhone, 
         role: userType,
-        password: hashedPassword,
-        address: address || city || state || pinCode ? {
-          create: {
-            complete: address,
-            city,
-            state,
-            pincode: pinCode ? Number(pinCode) : undefined,
-            location: latitude != null && longitude != null ? {
-              create: {
-                latitude: String(latitude),
-                longitude: String(longitude)
-              }
-            } : undefined
-          }
-        } : undefined
+        password: hashedPassword
       }
     });
 
@@ -322,11 +202,26 @@ export const getUserById = async (req: Request, res: Response) => {
 
     const doctor = await prisma.doctor.findUnique({
       where: { id: user_id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true
+      omit: {
+        password: true
+      },
+      include: { 
+        address: {
+          omit: {
+            id: true,
+            hospitalId: true,
+            doctorId: true,
+            userId: true
+          },
+          include: {
+            location: {
+              omit: {
+                id: true,
+                addressId: true
+              }
+            }
+          }
+        }
       }
     });
 

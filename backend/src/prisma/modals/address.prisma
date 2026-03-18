@@ -1,6 +1,7 @@
 model Address {
   id          String   @id @default(uuid())
 
+  userId  String?  @unique
   doctorId    String?  @unique
   hospitalId  String?  @unique
 
@@ -9,14 +10,15 @@ model Address {
   state       String?
   country     String?
   pincode     Int?
-  location    LocationData?
+  location    Location?
 
+  user        User?     @relation(fields: [userId], references: [id])
   doctor      Doctor?   @relation(fields: [doctorId], references: [id])
   hospital    Hospital? @relation(fields: [hospitalId], references: [id])
 
 }
 
-model LocationData {
+model Location {
   id          String   @id @default(uuid())
   latitude    String
   longitude   String
