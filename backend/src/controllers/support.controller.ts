@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import type { Prisma } from '../generated/prisma/client/index.js';
 import { prisma } from '../lib/prisma.ts';
-import { badRequest, currentUserId, getPagination, idParam, notFound, pageMeta, parse } from '../lib/http.ts';
+import { badRequest, currentUserId, getPagination, idParam, notFound, optional, pageMeta, parse } from '../lib/http.ts';
 import { labelOf } from '../lib/meta.ts';
 import { fileDto, persistFiles } from '../lib/upload.ts';
 import { notify } from '../services/notify.ts';
@@ -10,28 +10,28 @@ import { notify } from '../services/notify.ts';
 const text = (max: number) => z.string().trim().min(1).max(max);
 
 const locationFields = {
-  locationText: z.string().trim().max(300).optional(),
-  latitude: z.coerce.number().min(-90).max(90).optional(),
-  longitude: z.coerce.number().min(-180).max(180).optional(),
-  details: z.string().trim().max(1000).optional()
+  locationText: optional(z.string().trim().max(300)),
+  latitude: optional(z.coerce.number().min(-90).max(90)),
+  longitude: optional(z.coerce.number().min(-180).max(180)),
+  details: optional(z.string().trim().max(1000))
 };
 
 // Field requirements per "Hire Assistent" form.
 const assistantSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('DOCTOR'), doctorName: text(100).optional(), ...locationFields }),
+  z.object({ type: z.literal('DOCTOR'), doctorName: optional(text(100)), ...locationFields }),
   z.object({ type: z.literal('HOSPITAL'), hospitalName: text(150), ...locationFields }),
   z.object({ type: z.literal('MEDICINE'), medicineName: text(150), ...locationFields }),
   z.object({
     type: z.literal('BLOOD_DONATION'),
     bloodGroup: text(10),
-    hospitalName: text(150).optional(),
+    hospitalName: optional(text(150)),
     ...locationFields
   }),
   z.object({
     type: z.literal('JOB'),
     qualification: text(150),
-    workExperience: text(150).optional(),
-    expectedSalary: text(50).optional(),
+    workExperience: optional(text(150)),
+    expectedSalary: optional(text(50)),
     ...locationFields
   })
 ]);
@@ -102,13 +102,13 @@ export const getAssistantRequest = async (req: Request, res: Response) => {
 
 const complaintSchema = z.object({
   target: z.enum(['DOCTOR', 'NURSE', 'HOSPITAL', 'ASSISTANT']),
-  doctorId: z.string().min(1).optional(),
-  hospitalId: z.string().min(1).optional(),
-  subjectName: z.string().trim().max(150).optional(),
-  city: z.string().trim().max(100).optional(),
-  address: z.string().trim().max(300).optional(),
-  clinicName: z.string().trim().max(150).optional(),
-  registrationNo: z.string().trim().max(100).optional(),
+  doctorId: optional(z.string().min(1)),
+  hospitalId: optional(z.string().min(1)),
+  subjectName: optional(z.string().trim().max(150)),
+  city: optional(z.string().trim().max(100)),
+  address: optional(z.string().trim().max(300)),
+  clinicName: optional(z.string().trim().max(150)),
+  registrationNo: optional(z.string().trim().max(100)),
   description: z.string().trim().min(1, 'Please describe your problem.').max(300)
 });
 

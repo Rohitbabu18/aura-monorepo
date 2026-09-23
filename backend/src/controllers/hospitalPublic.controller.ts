@@ -73,7 +73,11 @@ export const listHospitals = async (req: Request, res: Response) => {
   } else {
     hospitals = await prisma.hospital.findMany({
       where,
-      orderBy: [{ ratingAvg: 'desc' }, { ratingCount: 'desc' }, { name: 'asc' }],
+      // "recommended" favours well-reviewed hospitals; "rating" favours the highest average.
+      orderBy:
+        q.sort === 'recommended'
+          ? [{ ratingCount: 'desc' }, { ratingAvg: 'desc' }, { name: 'asc' }]
+          : [{ ratingAvg: 'desc' }, { ratingCount: 'desc' }, { name: 'asc' }],
       skip,
       take,
       select: hospitalCardSelect
@@ -106,6 +110,7 @@ export const getHospitalProfile = async (req: Request, res: Response) => {
   const id = idParam(req);
   const hospital = await prisma.hospital.findFirst({
     where: { id, isActive: true },
+    omit: { email: true, alternatePhone: true, licenseNumber: true, isActive: true },
     include: {
       address: addressInclude,
       operatingData: true,

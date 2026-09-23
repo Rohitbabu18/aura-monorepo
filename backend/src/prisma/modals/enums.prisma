@@ -3,8 +3,6 @@ enum HospitalRole {
   CLINIC
 }
 
-// ---------- Patient profile ----------
-
 enum Gender {
   MALE
   FEMALE
@@ -35,7 +33,6 @@ enum AllergyType {
   OTHER
 }
 
-// Medication / disease / surgery history: "Current|Present" vs "Past"
 enum HistoryStatus {
   NONE
   CURRENT
@@ -65,8 +62,6 @@ enum ActivityLevel {
   HIGHLY_ACTIVE
 }
 
-// ---------- Hospital ----------
-
 enum RoomType {
   GENERAL_MALE
   GENERAL_FEMALE
@@ -77,8 +72,6 @@ enum RoomType {
   ICU
   NICU
 }
-
-// ---------- Booking & payments ----------
 
 enum AppointmentStatus {
   PENDING_PAYMENT
@@ -113,8 +106,6 @@ enum PaymentPurpose {
   OTHER
 }
 
-// ---------- Files ----------
-
 enum FileVisibility {
   PUBLIC
   PRIVATE
@@ -130,8 +121,6 @@ enum FilePurpose {
   COMPLAINT_EVIDENCE
   OTHER
 }
-
-// ---------- Engagement ----------
 
 enum NotificationType {
   APPOINTMENT
@@ -169,8 +158,6 @@ enum MediaKind {
   IMAGE
   FILE
 }
-
-// ---------- Support ----------
 
 enum AssistantRequestType {
   DOCTOR

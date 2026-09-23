@@ -1,26 +1,21 @@
-// Master data used across booking flows (ChooseSymptom, MakeAppointment, ChooseTypeofDisease)
 model Symptom {
-  id        String  @id @default(uuid())
-  name      String  @unique
-  iconUrl   String?
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
-
-  appointments     Appointment[]
-  hospitalBookings HospitalBooking[]
+  id               String            @id @default(uuid())
+  name             String            @unique
+  iconUrl          String?
+  sortOrder        Int               @default(0)
+  isActive         Boolean           @default(true)
+  appointments     Appointment[]     @relation("AppointmentToSymptom")
+  hospitalBookings HospitalBooking[] @relation("HospitalBookingToSymptom")
 }
 
-// Feed "Select specialities" tags
 model Speciality {
   id        String  @id @default(uuid())
   name      String  @unique
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
-
-  posts Post[]
+  posts     Post[]  @relation("PostToSpeciality")
 }
 
-// Home banner slider / "Explore" banners
 model Banner {
   id        String       @id @default(uuid())
   placement String       @default("HOME_EXPLORE")
@@ -33,17 +28,15 @@ model Banner {
   isActive  Boolean      @default(true)
 }
 
-// Key/value runtime config (support phone numbers, doctor-app URL, ...)
 model AppConfig {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
 }
 
-// Help Center topics ("I have an issue with ...")
 model HelpArticle {
   id        String  @id @default(uuid())
-  category  String // APPOINTMENT | DOCTOR | HOSPITAL | HEALTH_PLANS | MEDICINE_ORDERS | INSURANCE_PLANS
+  category  String
   title     String
   content   String
   sortOrder Int     @default(0)
@@ -55,15 +48,15 @@ model HelpArticle {
 model Review {
   id         String    @id @default(uuid())
   userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctorId   String?
-  doctor     Doctor?   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   hospitalId String?
-  hospital   Hospital? @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
-  rating     Int // 1..5
+  rating     Int
   comment    String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+  doctor     Doctor?   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital   Hospital? @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, doctorId])
   @@unique([userId, hospitalId])

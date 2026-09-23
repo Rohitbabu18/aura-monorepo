@@ -15,7 +15,7 @@ import {
 import { labelOf } from '../lib/meta.ts';
 import { doctorCard, doctorCardSelect, hospitalCard, hospitalCardSelect } from '../lib/serializers.ts';
 import { fileDto } from '../lib/upload.ts';
-import { formatDateOnly, isPastDate, nowInAppTz, toDateOnly } from '../lib/time.ts';
+import { dayOfWeek, formatDateOnly, isPastDate, nowInAppTz, toDateOnly } from '../lib/time.ts';
 import { connectOwnReports, connectSymptoms, symptomSelect } from '../services/bookingHelpers.ts';
 import { notify } from '../services/notify.ts';
 
@@ -56,6 +56,17 @@ const bookingDto = (b: BookingRecord) => {
   };
 };
 
+const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+/** Rejects dates the hospital marked as closed (days without operating data are treated as open). */
+const assertHospitalOpen = (operatingData: Record<string, unknown> | null, date: string) => {
+  if (!operatingData) return;
+  const day = DAY_KEYS[dayOfWeek(date)];
+  if (operatingData[`${day}Enabled`] === false) {
+    throw badRequest(`The hospital is closed on ${day[0].toUpperCase()}${day.slice(1)}s. Please choose another date.`);
+  }
+};
+
 const futureDate = dateOnlySchema.refine((d) => !isPastDate(d), 'Date cannot be in the past.');
 
 const createSchema = z.object({
@@ -75,9 +86,10 @@ export const createHospitalBooking = async (req: Request, res: Response) => {
 
   const hospital = await prisma.hospital.findFirst({
     where: { id: input.hospitalId, isActive: true },
-    select: { id: true, name: true }
+    select: { id: true, name: true, operatingData: true }
   });
   if (!hospital) throw notFound('Hospital not found.');
+  assertHospitalOpen(hospital.operatingData, input.admissionDate);
 
   if (input.doctorId) {
     const doctor = await prisma.doctor.findFirst({
@@ -199,6 +211,8 @@ export const rescheduleHospitalBooking = async (req: Request, res: Response) => 
   const booking = await loadBooking(id, userId);
   if (!booking) throw notFound('Booking not found.');
   assertChangeable(booking);
+  const operatingData = await prisma.operatingData.findUnique({ where: { hospitalId: booking.hospitalId } });
+  assertHospitalOpen(operatingData, input.admissionDate);
 
   const symptoms = input.symptomIds ? await connectSymptoms(input.symptomIds) : undefined;
   await prisma.hospitalBooking.update({

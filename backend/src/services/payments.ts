@@ -13,5 +13,5 @@ export const chargePayment = async (payment: { id: string; amount: number; curre
   if (process.env.NODE_ENV === 'production') {
     throw new HttpError(503, 'Payments are not configured.');
   }
-  return { provider: 'mock', providerRef: `mock_${randomUUID()}`, status: 'SUCCESS' as const };
+  return { provider: 'mock', providerRef: `mock_${randomUUID()}`, status: 'SUCCESS' as 'SUCCESS' | 'FAILED' };
 };

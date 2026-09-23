@@ -119,7 +119,15 @@ export const getDoctorProfile = async (req: Request, res: Response) => {
   const id = idParam(req);
   const doctor = await prisma.doctor.findFirst({
     where: { id, isActive: true },
-    omit: { password: true },
+    // Public profile: never expose credentials, contact details or registration data.
+    omit: {
+      password: true,
+      email: true,
+      alternatePhone: true,
+      registrationNumber: true,
+      registrationAuthority: true,
+      isActive: true
+    },
     include: {
       address: addressInclude,
       availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },

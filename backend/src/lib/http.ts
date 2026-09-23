@@ -19,17 +19,34 @@ export const forbidden = (message = 'You are not allowed to perform this action.
 export const notFound = (message = 'Resource not found.') => new HttpError(404, message);
 export const conflict = (message: string) => new HttpError(409, message);
 
+// "hospitalName" -> "Hospital name"
+const humanize = (key: string) => {
+  const words = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
+
+/** Zod's default "Invalid input: expected string, received undefined" becomes "Hospital name is required." */
+const issueMessage = (issue: z.core.$ZodIssue) => {
+  const field = issue.path[issue.path.length - 1];
+  if (issue.code === 'invalid_type' && /received undefined/.test(issue.message) && typeof field === 'string') {
+    return `${humanize(field)} is required.`;
+  }
+  return issue.message;
+};
+
 /** Parse and validate input with a zod schema; throws a 400 with field errors on failure. */
 export const parse = <T extends z.ZodType>(schema: T, input: unknown): z.infer<T> => {
   const result = schema.safeParse(input);
   if (!result.success) {
-    throw badRequest(
-      result.error.issues[0]?.message ?? 'Invalid request.',
-      result.error.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message }))
-    );
+    const issues = result.error.issues.map((issue) => ({ path: issue.path.join('.'), message: issueMessage(issue) }));
+    throw badRequest(issues[0]?.message ?? 'Invalid request.', issues);
   }
   return result.data;
 };
+
+/** Optional field that treats "" (common from form inputs) as not provided. */
+export const optional = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === '' || value === null ? undefined : value), schema.optional());
 
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

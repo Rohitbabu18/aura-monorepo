@@ -178,11 +178,33 @@ export const payAppointment = async (req: Request, res: Response) => {
     throw badRequest('This appointment is not awaiting payment.');
   }
 
-  const result = await chargePayment(appointment.payment);
+  // Claim the pending payment first so two concurrent "pay" taps cannot both charge.
+  const claimed = await prisma.payment.updateMany({
+    where: { id: appointment.payment.id, status: 'PENDING', provider: null },
+    data: { provider: 'processing' }
+  });
+  if (claimed.count === 0) throw conflict('This payment is already being processed.');
+
+  let result;
+  try {
+    result = await chargePayment(appointment.payment);
+  } catch (error) {
+    await prisma.payment.update({ where: { id: appointment.payment.id }, data: { provider: null } });
+    throw error;
+  }
+
+  if (result.status !== 'SUCCESS') {
+    await prisma.payment.update({
+      where: { id: appointment.payment.id },
+      data: { status: 'FAILED', provider: result.provider, providerRef: result.providerRef }
+    });
+    throw badRequest('Payment failed. Please try again.');
+  }
+
   await prisma.$transaction([
     prisma.payment.update({
       where: { id: appointment.payment.id },
-      data: { status: result.status, provider: result.provider, providerRef: result.providerRef, paidAt: new Date() }
+      data: { status: 'SUCCESS', provider: result.provider, providerRef: result.providerRef, paidAt: new Date() }
     }),
     prisma.appointment.update({ where: { id }, data: { status: 'CONFIRMED' } })
   ]);

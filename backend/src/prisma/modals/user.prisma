@@ -1,69 +1,60 @@
 model User {
-  id                    String    @id @default(uuid())
+  id                    String             @id @default(uuid())
   name                  String?
-  phone                 String?   @unique
-  email                 String?   @unique
+  phone                 String?            @unique
+  email                 String?            @unique
   alternatePhone        String?
   password              String
   activeSessionId       String?
   refreshTokenHash      String?
   refreshTokenExpiresAt DateTime?
-
-  // Personal info (ProfilePage1 / EditPersonalInfo)
-  avatarUrl            String?
-  gender               Gender?
-  dateOfBirth          DateTime?      @db.Date
-  bloodGroup           BloodGroup?
-  maritalStatus        MaritalStatus?
-  heightFeet           Float?
-  weightKg             Float?
-  phoneVerifiedAt      DateTime?
-  notificationsEnabled Boolean        @default(true)
-
-  address       Address?
-  healthProfile UserHealthProfile?
-
-  appointments      Appointment[]
-  hospitalBookings  HospitalBooking[]
-  payments          Payment[]
-  reviews           Review[]
-  favouriteDoctors  FavouriteDoctor[]
-  notifications     Notification[]
-  conversations     Conversation[]
-  posts             Post[]
-  postLikes         PostLike[]
-  postSaves         PostSave[]
-  comments          Comment[]
-  assistantRequests AssistantRequest[]
-  complaints        Complaint[]
-  feedback          Feedback[]
-  files             FileObject[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  avatarUrl             String?
+  gender                Gender?
+  dateOfBirth           DateTime?          @db.Date
+  bloodGroup            BloodGroup?
+  maritalStatus         MaritalStatus?
+  heightFeet            Float?
+  weightKg              Float?
+  phoneVerifiedAt       DateTime?
+  notificationsEnabled  Boolean            @default(true)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  address               Address?
+  appointments          Appointment[]
+  assistantRequests     AssistantRequest[]
+  comments              Comment[]
+  complaints            Complaint[]
+  conversations         Conversation[]
+  favouriteDoctors      FavouriteDoctor[]
+  feedback              Feedback[]
+  files                 FileObject[]
+  hospitalBookings      HospitalBooking[]
+  notifications         Notification[]
+  payments              Payment[]
+  posts                 Post[]
+  postLikes             PostLike[]
+  postSaves             PostSave[]
+  reviews               Review[]
+  healthProfile         UserHealthProfile?
 }
 
-// Medical (ProfilePage2 / EditMedicalInfo) + Lifestyle (ProfilePage3 / EditLifeStyleInfo)
 model UserHealthProfile {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  allergyType       AllergyType?
-  allergyDetails    String?
-  medicationStatus  HistoryStatus?
-  medicationDetails String?
-  diseaseStatus     HistoryStatus?
-  diseaseDetails    String?
-  surgeryStatus     HistoryStatus?
-  surgeryDetails    String?
-
+  id                 String              @id @default(uuid())
+  userId             String              @unique
+  allergyType        AllergyType?
+  allergyDetails     String?
+  medicationStatus   HistoryStatus?
+  medicationDetails  String?
+  diseaseStatus      HistoryStatus?
+  diseaseDetails     String?
+  surgeryStatus      HistoryStatus?
+  surgeryDetails     String?
   smokingHabit       SmokingHabit?
   alcoholConsumption AlcoholConsumption?
   activityLevel      ActivityLevel?
   occupation         String?
-
-  updatedAt DateTime @updatedAt
+  updatedAt          DateTime            @updatedAt
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OtpCode {
