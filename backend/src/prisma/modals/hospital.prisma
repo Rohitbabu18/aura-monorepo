@@ -1,39 +1,52 @@
-
 model Hospital {
-  id                     String   @id @default(uuid())
-  name                   String
-  email                  String   @unique
-  phone                  String?
-  alternatePhone         String?
+  id             String  @id @default(uuid())
+  name           String
+  email          String  @unique
+  phone          String?
+  alternatePhone String?
 
-  role                   HospitalRole @default(HOSPITAL)
-  facilityType           String?
-  ownershipType          String?
-  numberOfBeds           Int?
-  numberOfIcuBeds        Int?
-  numberOfVentilators    Int?
-  totalStaff             Int?
-  emergencyAvailable     Boolean?
-  ambulanceAvailable     Boolean?
-  specialtiesOffered     String[]
-  accreditationDetails   String?
-  registrationNumber     String?
-  yearEstablished        Int?
-  licenseNumber          String?
-  servicesOffered        String[]
-  websiteUrl             String?
+  role                 HospitalRole @default(HOSPITAL)
+  facilityType         String?
+  ownershipType        String?
+  numberOfBeds         Int?
+  numberOfIcuBeds      Int?
+  numberOfVentilators  Int?
+  totalStaff           Int?
+  emergencyAvailable   Boolean?
+  ambulanceAvailable   Boolean?
+  specialtiesOffered   String[]
+  accreditationDetails String?
+  registrationNumber   String?
+  yearEstablished      Int?
+  licenseNumber        String?
+  servicesOffered      String[]
+  websiteUrl           String?
 
-  address                Address? 
-  operatingData          OperatingData?
+  // Public profile (Hospital / AboutHospital / Photos)
+  about          String?
+  coverImageUrl  String?
+  photoUrls      String[]
+  ambulancePhone String?
+  isActive       Boolean  @default(true)
+  ratingAvg      Float    @default(0)
+  ratingCount    Int      @default(0)
 
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  address       Address?
+  operatingData OperatingData?
+  rooms         HospitalRoom[]
+  packages      HospitalPackage[]
+  doctors       Doctor[]
+  reviews       Review[]
+  bookings      HospitalBooking[]
+  complaints    Complaint[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-  
 
 model OperatingData {
-  id          String  @id @default(uuid())
-  hospitalId  String  @unique
+  id               String   @id @default(uuid())
+  hospitalId       String   @unique
   mondayEnabled    Boolean?
   mondayStart      String?
   mondayEnd        String?
@@ -56,5 +69,37 @@ model OperatingData {
   sundayStart      String?
   sundayEnd        String?
 
-  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+}
+
+// "Charge Room" tab / ChooseRoom / Compare "Fees & Charges"
+model HospitalRoom {
+  id                   String   @id @default(uuid())
+  hospitalId           String
+  hospital             Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  roomType             RoomType
+  name                 String // e.g. "General Ward for Male"
+  feePerDay            Int
+  patientsPerRoom      Int      @default(1)
+  serviceChargePercent Int?
+  doctorVisitCharge    Int?
+  minBookingAmount     Int?
+  photoUrls            String[]
+  isAvailable          Boolean  @default(true)
+
+  bookings HospitalBooking[]
+
+  @@index([hospitalId, roomType])
+}
+
+// Compare "Packages" (e.g. Operation Delivery, Normal Delivery)
+model HospitalPackage {
+  id          String   @id @default(uuid())
+  hospitalId  String
+  hospital    Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  price       Int
+
+  @@index([hospitalId])
 }

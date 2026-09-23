@@ -1,12 +1,25 @@
 import { Router } from "express";
-import { signin, register, updateUserById, getUserById, deleteUser } from "../controllers/user.controller.ts";
+import {
+  signin,
+  register,
+  updateUserById,
+  getUserById,
+  deleteUser,
+  refreshUserSession,
+  logoutUser,
+  resetPassword
+} from "../controllers/user.controller.ts";
+import { requireAuth } from "../middleware/auth.ts";
 
 const router = Router();
 
-router.get('/:id', getUserById);
 router.post('/signin',signin)
+router.post('/refresh-token', refreshUserSession)
+router.post('/logout', logoutUser)
 router.post('/register',register)
-router.patch('/update/:id', updateUserById);
-router.delete('/delete/:id', deleteUser);
+router.post('/reset-password', resetPassword)
+router.get('/:id', requireAuth, getUserById);
+router.patch('/update/:id', requireAuth, updateUserById);
+router.delete('/delete/:id', requireAuth, deleteUser);
 
 export default router;

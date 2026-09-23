@@ -1,16 +1,69 @@
 model Doctor {
-  id        String   @id @default(uuid())
-  name      String?
-  phone     String   @unique
-  email     String?  @unique
-  role                 String?
-  alternatePhone      String?
-  specialization       String?
-  experience           String?
-  registrationNumber   String?
+  id                    String  @id @default(uuid())
+  name                  String?
+  phone                 String  @unique
+  email                 String? @unique
+  role                  String?
+  alternatePhone        String?
+  specialization        String?
+  experience            String?
+  registrationNumber    String?
   registrationAuthority String?
-  password  String
-  address                Address? 
+  password              String
+
+  // Public profile (DoctorHome / AboutDoctor / listings)
+  avatarUrl        String?
+  degree           String?
+  about            String?
+  education        String?
+  awards           String?
+  clinicName       String?
+  consultationFee  Int?
+  waitingTimeMins  Int?
+  services         String[]
+  photoUrls        String[]
+  videoUrl         String?
+  isFeatured       Boolean  @default(false) // "Top Specialist"
+  isAuraSpecialist Boolean  @default(false) // "Aura Specialist"
+  isActive         Boolean  @default(true)
+  ratingAvg        Float    @default(0)
+  ratingCount      Int      @default(0)
+
+  address          Address?
+  availability     DoctorAvailability[]
+  hospitals        Hospital[]
+  appointments     Appointment[]
+  hospitalBookings HospitalBooking[]
+  reviews          Review[]
+  favouritedBy     FavouriteDoctor[]
+  conversations    Conversation[]
+  posts            Post[]
+  comments         Comment[]
+  complaints       Complaint[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Weekly consultation windows used to generate bookable slots.
+model DoctorAvailability {
+  id          String @id @default(uuid())
+  doctorId    String
+  doctor      Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int // 0 = Sunday ... 6 = Saturday
+  startTime   String // "HH:mm" local time
+  endTime     String // "HH:mm" local time
+  slotMinutes Int    @default(15)
+
+  @@index([doctorId, dayOfWeek])
+}
+
+model FavouriteDoctor {
+  userId    String
+  doctorId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, doctorId])
 }

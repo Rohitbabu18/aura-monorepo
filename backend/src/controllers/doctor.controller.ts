@@ -28,9 +28,10 @@ export const register = async (req: Request, res: Response) => {
       const isMatch = await bcrypt.compare(password, exists.password);
 
       if (isMatch) {
+        const { password: _password, ...safeDoctor } = exists;
         return res.status(200).json({
           message: 'Sign In successfully.',
-          data: exists,
+          data: safeDoctor,
           code: 200
         });
       }
@@ -51,9 +52,10 @@ export const register = async (req: Request, res: Response) => {
       }
     });
 
+    const { password: _password, ...safeDoctor } = doctor;
     return res.status(201).json({
       message: 'User Sign Up successfully.',
-      data: doctor
+      data: safeDoctor
     });
 
   } catch (error) {

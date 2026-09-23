@@ -1,0 +1,64 @@
+// "Hire Assistent": AssForDoctor / AssForHospital / AssForMedicine / AssForBloodDonation / AssForJob
+model AssistantRequest {
+  id     String               @id @default(uuid())
+  userId String
+  user   User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type   AssistantRequestType
+  status RequestStatus        @default(OPEN)
+
+  doctorName     String?
+  hospitalName   String?
+  medicineName   String?
+  bloodGroup     String?
+  qualification  String?
+  workExperience String?
+  expectedSalary String?
+  details        String?
+
+  locationText String?
+  latitude     Float?
+  longitude    Float?
+
+  attachmentId String? // prescription (MEDICINE) or resume (JOB)
+  attachment   FileObject? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+// "Report a Complaint"
+model Complaint {
+  id             String          @id @default(uuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  target         ComplaintTarget
+  doctorId       String?
+  doctor         Doctor?         @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  hospitalId     String?
+  hospital       Hospital?       @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
+  subjectName    String? // "Name of <target>"
+  city           String?
+  address        String?
+  clinicName     String?
+  registrationNo String?
+  description    String
+  evidenceId     String?
+  evidence       FileObject?     @relation(fields: [evidenceId], references: [id], onDelete: SetNull)
+  status         RequestStatus   @default(OPEN)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+// "Feedback & Suggestions"
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+}

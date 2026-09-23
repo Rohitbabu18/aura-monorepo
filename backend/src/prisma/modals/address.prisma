@@ -1,27 +1,26 @@
 model Address {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId  String?  @unique
-  doctorId    String?  @unique
-  hospitalId  String?  @unique
+  userId     String? @unique
+  doctorId   String? @unique
+  hospitalId String? @unique
 
-  complete    String?
-  city        String?
-  state       String?
-  country     String?
-  pincode     Int?
-  location    Location?
+  complete String?
+  city     String?
+  state    String?
+  country  String?
+  pincode  Int?
+  location Location?
 
-  user        User?     @relation(fields: [userId], references: [id])
-  doctor      Doctor?   @relation(fields: [doctorId], references: [id])
-  hospital    Hospital? @relation(fields: [hospitalId], references: [id])
-
+  user     User?     @relation(fields: [userId], references: [id])
+  doctor   Doctor?   @relation(fields: [doctorId], references: [id])
+  hospital Hospital? @relation(fields: [hospitalId], references: [id])
 }
 
 model Location {
-  id          String   @id @default(uuid())
-  latitude    String
-  longitude   String
-  addressId   String   @unique
-  address     Address  @relation(fields: [addressId], references: [id])
+  id        String  @id @default(uuid())
+  latitude  String
+  longitude String
+  addressId String  @unique
+  address   Address @relation(fields: [addressId], references: [id])
 }

@@ -29,3 +29,6 @@ dist/
 build/
  
 /src/generated/prisma
+
+# User uploads
+uploads/

@@ -353,6 +353,8 @@ npx prisma migrate reset    # Reset and reapply migrations
 
 ## 12. API Endpoints
 
+> Full patient-app API (every screen → endpoint, data model, open items): see [`docs/API.md`](docs/API.md).
+
 Once the server is running, you can test these endpoints:
 
 ### Health Check

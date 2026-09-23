@@ -1,0 +1,21 @@
+// Every uploaded file (reports, avatars, post media, prescriptions, resumes, evidence)
+model FileObject {
+  id           String         @id @default(uuid())
+  ownerId      String
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  purpose      FilePurpose
+  visibility   FileVisibility @default(PRIVATE)
+  storageKey   String         @unique
+  originalName String
+  mimeType     String
+  size         Int
+  createdAt    DateTime       @default(now())
+
+  appointments      Appointment[]      @relation("AppointmentReports")
+  hospitalBookings  HospitalBooking[]  @relation("HospitalBookingReports")
+  postMedia         PostMedia[]
+  assistantRequests AssistantRequest[]
+  complaints        Complaint[]
+
+  @@index([ownerId, purpose, createdAt])
+}

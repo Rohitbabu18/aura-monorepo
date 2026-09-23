@@ -1,0 +1,92 @@
+// Doctor consultation (DoctorAppoint flow + MakeAppointment flow)
+model Appointment {
+  id       String @id @default(uuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  date      DateTime          @db.Date
+  startTime String // "HH:mm" local time
+  endTime   String
+  status    AppointmentStatus @default(PENDING_PAYMENT)
+
+  // Patient: "You" or "Someone else"
+  forSelf      Boolean @default(true)
+  patientName  String?
+  patientPhone String?
+  patientEmail String?
+
+  symptoms      Symptom[]
+  otherSymptoms String?
+  comment       String?
+  reports       FileObject[] @relation("AppointmentReports")
+
+  fee             Int // INR, snapshot of doctor.consultationFee
+  // "<doctorId>|<yyyy-mm-dd>|<HH:mm>" while active, NULL when cancelled.
+  // A unique index here makes double-booking impossible, even under races.
+  slotLock        String?   @unique
+  rescheduleCount Int       @default(0)
+  cancelledAt     DateTime?
+  cancelReason    String?
+
+  payment Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([doctorId, date])
+}
+
+// Hospital flow: ChooseDate -> ChooseTypeofDisease -> ChooseDoctor -> ChooseRoom -> UploadYourReports
+model HospitalBooking {
+  id         String        @id @default(uuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  hospitalId String
+  hospital   Hospital      @relation(fields: [hospitalId], references: [id])
+  doctorId   String?
+  doctor     Doctor?       @relation(fields: [doctorId], references: [id])
+  roomId     String?
+  room       HospitalRoom? @relation(fields: [roomId], references: [id])
+
+  admissionDate DateTime              @db.Date
+  status        HospitalBookingStatus @default(REQUESTED)
+  symptoms      Symptom[]
+  otherSymptoms String?
+  reports       FileObject[]          @relation("HospitalBookingReports")
+  cancelledAt   DateTime?
+  cancelReason  String?
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, admissionDate])
+  @@index([hospitalId, admissionDate])
+}
+
+// PaymentHistory screen
+model Payment {
+  id                String           @id @default(uuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id])
+  purpose           PaymentPurpose
+  title             String // e.g. "Appointment Booking Charge"
+  amount            Int // INR
+  currency          String           @default("INR")
+  status            PaymentStatus    @default(PENDING)
+  provider          String?
+  providerRef       String?
+  appointmentId     String?          @unique
+  appointment       Appointment?     @relation(fields: [appointmentId], references: [id])
+  hospitalBookingId String?
+  hospitalBooking   HospitalBooking? @relation(fields: [hospitalBookingId], references: [id])
+  paidAt            DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([userId, createdAt])
+}

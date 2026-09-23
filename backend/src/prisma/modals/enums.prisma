@@ -2,3 +2,208 @@ enum HospitalRole {
   HOSPITAL
   CLINIC
 }
+
+// ---------- Patient profile ----------
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+}
+
+enum AllergyType {
+  NONE
+  FOOD
+  PET
+  SKIN
+  OTHER
+}
+
+// Medication / disease / surgery history: "Current|Present" vs "Past"
+enum HistoryStatus {
+  NONE
+  CURRENT
+  PAST
+}
+
+enum SmokingHabit {
+  NON_SMOKER
+  QUIT
+  HALF_PACK_PER_DAY
+  THREE_TO_FIVE_PER_DAY
+  TEN_TO_FIFTEEN_PER_DAY
+}
+
+enum AlcoholConsumption {
+  NONE
+  OCCASIONALLY
+  MILD
+  MODERATE
+  HEAVY
+}
+
+enum ActivityLevel {
+  LOW
+  MODERATE
+  ACTIVE
+  HIGHLY_ACTIVE
+}
+
+// ---------- Hospital ----------
+
+enum RoomType {
+  GENERAL_MALE
+  GENERAL_FEMALE
+  PRIVATE
+  SEMI_PRIVATE
+  DELUXE
+  SUPER_DELUXE
+  ICU
+  NICU
+}
+
+// ---------- Booking & payments ----------
+
+enum AppointmentStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum HospitalBookingStatus {
+  REQUESTED
+  CONFIRMED
+  ADMITTED
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentPurpose {
+  APPOINTMENT
+  HOSPITAL_BOOKING
+  REGISTRATION
+  INVESTIGATION
+  OTHER
+}
+
+// ---------- Files ----------
+
+enum FileVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum FilePurpose {
+  AVATAR
+  MEDICAL_REPORT
+  POST_IMAGE
+  POST_ATTACHMENT
+  PRESCRIPTION
+  RESUME
+  COMPLAINT_EVIDENCE
+  OTHER
+}
+
+// ---------- Engagement ----------
+
+enum NotificationType {
+  APPOINTMENT
+  HOSPITAL_BOOKING
+  PAYMENT
+  REPORT
+  CHAT
+  FEED
+  ASSISTANT
+  SYSTEM
+}
+
+enum ConversationType {
+  DOCTOR
+  AURA
+}
+
+enum SenderType {
+  USER
+  DOCTOR
+  SYSTEM
+}
+
+enum PostVisibility {
+  PUBLIC
+  DOCTORS
+}
+
+enum AuthorType {
+  USER
+  DOCTOR
+}
+
+enum MediaKind {
+  IMAGE
+  FILE
+}
+
+// ---------- Support ----------
+
+enum AssistantRequestType {
+  DOCTOR
+  HOSPITAL
+  MEDICINE
+  BLOOD_DONATION
+  JOB
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ComplaintTarget {
+  DOCTOR
+  NURSE
+  HOSPITAL
+  ASSISTANT
+}
+
+enum OtpPurpose {
+  REGISTER
+  LOGIN
+  CHANGE_PHONE
+  RESET_PASSWORD
+}
+
+enum BannerTarget {
+  NONE
+  HOSPITAL
+  DOCTOR
+  URL
+}
