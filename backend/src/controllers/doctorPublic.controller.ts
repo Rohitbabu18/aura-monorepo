@@ -26,6 +26,7 @@ const listSchema = z
     hospitalId: z.string().optional(),
     role: z.string().trim().max(30).default('doctor'),
     sort: z.enum(['distance', 'availability', 'rating', 'recommended']).default('recommended'),
+    date: dateOnlySchema.optional(),
     lat: z.coerce.number().min(-90).max(90).optional(),
     lng: z.coerce.number().min(-180).max(180).optional()
   })
@@ -45,6 +46,7 @@ const favouriteIds = async (userId: string | undefined, doctorIds: string[]) => 
 /**
  * ShowDoctorList / SelectDoctor / Hospital "Our Specialists".
  * sort=availability keeps doctors who consult today, ordered by rating.
+ * date=YYYY-MM-DD keeps doctors who consult on that day (MakeAppointment: date first, then doctor).
  */
 export const listDoctors = async (req: Request, res: Response) => {
   const q = parse(listSchema, req.query);
@@ -71,7 +73,9 @@ export const listDoctors = async (req: Request, res: Response) => {
     ...(q.type === 'top' ? { isFeatured: true } : {}),
     ...(q.type === 'aura' ? { isAuraSpecialist: true } : {}),
     ...(q.hospitalId ? { hospitals: { some: { id: q.hospitalId } } } : {}),
-    ...(q.sort === 'availability' ? { availability: { some: { dayOfWeek: dayOfWeek(nowInAppTz().date) } } } : {})
+    ...(q.sort === 'availability' || q.date
+      ? { availability: { some: { dayOfWeek: dayOfWeek(q.date ?? nowInAppTz().date) } } }
+      : {})
   };
 
   let doctors;

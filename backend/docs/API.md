@@ -81,7 +81,7 @@ The existing tables and columns are unchanged. The additions are new nullable or
 | Reviews | `GET /api/doctor/:id/reviews`, `POST /api/doctor/:id/reviews` `{ rating, comment }` |
 | ChooseSymptom / MakeAppointment | `GET /api/symptoms?search=` |
 | Calendar / CalendarHome | `GET /api/doctor/:id/available-dates?days=30` |
-| SelectDoctor | `GET /api/doctor?search=&sort=` |
+| SelectDoctor | `GET /api/doctor?date=YYYY-MM-DD&search=&sort=` (only doctors who consult that day) |
 | TimeSloat / TimeSloatHome | `GET /api/doctor/:id/available-dates?days=8` for the date strip and `GET /api/doctor/:id/slots?date=` for slots grouped MORNING / AFTERNOON / EVENING / NIGHT |
 | PatientDetails / PatientDetailsHome | `POST /api/appointments` `{ doctorId, date, startTime, symptomIds, otherSymptoms, forSelf, patientName, patientPhone, patientEmail, reportIds, acceptTerms: true }`, then `POST /api/appointments/:id/pay` |
 
